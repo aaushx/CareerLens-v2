@@ -19,9 +19,8 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 # Install the rest of the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download and cache the Sentence Transformer model inside the image
-# This speeds up container startup and ensures offline capability on boot
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+# Model will be lazy-loaded on first use to save memory during startup
+# (Pre-downloading causes OOM on free-tier Render: 512MB RAM limit)
 
 # Copy the rest of the application files
 COPY . .
@@ -38,4 +37,6 @@ ENV FLASK_ENV=production
 ENV TESSERACT_CMD=/usr/bin/tesseract
 
 # Start application using Gunicorn
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 2 --worker-class sync --timeout 30 app:app"]
+# Note: --workers 1 for free tier (RAM limited)
+# --timeout 120 because model loading on first request takes time
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --timeout 120 --max-requests 100 app:app"]

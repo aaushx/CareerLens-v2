@@ -32,11 +32,14 @@ if TESSERACT_PATH and os.path.exists(TESSERACT_PATH):
 model = None
 
 def get_model():
+    """Lazy-load the model on first use to conserve memory on Render's free tier."""
     global model
-
     if model is None:
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-
+        try:
+            model = SentenceTransformer("all-MiniLM-L6-v2")
+        except Exception as e:
+            # Fallback if model loading fails
+            pass
     return model
 
 app = Flask(__name__)

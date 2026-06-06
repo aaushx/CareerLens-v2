@@ -2,7 +2,8 @@ import sqlite3
 import json
 import os
 
-DB_PATH = "careerlens.db"
+# Support environment variable for database path, default to careerlens.db
+DB_PATH = os.getenv("DATABASE_PATH", "careerlens.db")
 
 def get_db_connection(db_path=DB_PATH):
     conn = sqlite3.connect(db_path)
@@ -31,7 +32,6 @@ def init_db(db_path=DB_PATH):
     """)
     conn.commit()
     conn.close()
-    print("Database initialized successfully.")
 
 def save_scan(session_id, filename, extraction_method, job_description, results, db_path=DB_PATH):
     """Saves a new scan to the database."""
@@ -61,7 +61,6 @@ def save_scan(session_id, filename, extraction_method, job_description, results,
     
     conn.commit()
     conn.close()
-    print(f"Scan saved successfully for session {session_id}.")
 
 def get_scans(session_id, db_path=DB_PATH):
     """Retrieves all scan summaries for a specific session."""
@@ -123,4 +122,3 @@ def clear_scans(session_id, db_path=DB_PATH):
     
     conn.commit()
     conn.close()
-    print(f"All scans cleared for session {session_id}.")

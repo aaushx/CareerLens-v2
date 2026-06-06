@@ -2,12 +2,15 @@ import os
 import re
 import fitz
 import pytesseract
-
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, send_file, session
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ReportLab imports for PDF generation
 from io import BytesIO
@@ -17,10 +20,10 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
 # -------------------------------
-# Tesseract OCR Path (Windows)
+# Tesseract OCR Path (Cross-platform)
 # -------------------------------
-TESSERACT_PATH = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-if os.path.exists(TESSERACT_PATH):
+TESSERACT_PATH = os.getenv("TESSERACT_CMD", None)
+if TESSERACT_PATH and os.path.exists(TESSERACT_PATH):
     pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
 
 # -------------------------------
@@ -36,11 +39,9 @@ def get_model():
 
     return model
 
-print("Flask started")
-
 app = Flask(__name__)
-# Secret key for session management
-app.secret_key = "ats-secret-key-optimization-platform-2026"
+# Secret key for session management - use environment variable for security
+app.secret_key = os.getenv("SECRET_KEY", "ats-secret-key-optimization-platform-2026")
 
 import uuid
 import database
@@ -431,7 +432,7 @@ def extract_text_with_ocr(filepath):
                 text = pytesseract.image_to_string(img)
                 extracted_text += text + "\n"
             except Exception as e:
-                print(f"OCR error on page: {e}")
+                pass  # Skip OCR errors gracefully
     return extracted_text
 
 # -------------------------------
@@ -1510,4 +1511,5 @@ def generate_pdf_report(data):
 # -------------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    debug_mode = os.getenv("FLASK_ENV", "production") == "development"
+    app.run(host="0.0.0.0", port=port, debug=debug_mode)

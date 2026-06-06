@@ -21,10 +21,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Pre-download and cache the Sentence Transformer model inside the image
 # This speeds up container startup and ensures offline capability on boot
-# RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 # Copy the rest of the application files
 COPY . .
+
+# Create uploads directory for file uploads
+RUN mkdir -p uploads
 
 # Expose port 5000 for Flask
 EXPOSE 5000
@@ -32,6 +35,7 @@ EXPOSE 5000
 # Set environment variables for production
 ENV PORT=5000
 ENV FLASK_ENV=production
+ENV TESSERACT_CMD=/usr/bin/tesseract
 
 # Start application using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 2 --worker-class sync --timeout 30 app:app"]

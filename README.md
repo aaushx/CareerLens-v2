@@ -99,3 +99,67 @@ We have included a `render.yaml` blueprint and a custom `Dockerfile` in the root
    * Auto-mapping of Port `5000` to Render's public router.
 
 Alternatively, you can create a new **Web Service** manually on Render, choose **Docker** as the environment runtime, and click **Deploy**.
+
+### Environment Variables
+
+Create a `.env` file in the project root (or configure via Render dashboard) with the following variables:
+
+```env
+# Flask Configuration
+FLASK_ENV=production
+SECRET_KEY=your-secure-random-key-here
+
+# Database Path (optional, defaults to careerlens.db)
+# DATABASE_PATH=/data/careerlens.db
+
+# Tesseract OCR Path (Docker sets this automatically)
+# TESSERACT_CMD=/usr/bin/tesseract
+
+# Port (Render sets this automatically)
+PORT=5000
+```
+
+**Important**: Generate a secure `SECRET_KEY` for production:
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Then set it in Render's Environment Variables dashboard.
+
+---
+
+## Deployment Troubleshooting
+
+### Issue: "ModuleNotFoundError: No module named 'torch'"
+**Solution**: The Dockerfile installs CPU-only PyTorch via a specific index URL. Ensure Docker build is being used, not pip install from environment.
+
+### Issue: "No such file or directory: 'tesseract.exe'"
+**Solution**: On Render/Linux, Tesseract is installed via apt in the Dockerfile. The code automatically detects it at `/usr/bin/tesseract`.
+
+### Issue: Database permission errors on Render
+**Solution**: Use an absolute path for the database in a writable directory, or use the environment variable:
+```env
+DATABASE_PATH=/tmp/careerlens.db
+```
+
+---
+
+## File Structure
+
+```
+CareerLens/
+├── app.py                # Main Flask application
+├── database.py           # SQLite database management
+├── requirements.txt      # Python dependencies
+├── Dockerfile            # Container configuration
+├── render.yaml           # Render deployment blueprint
+├── .env.example          # Example environment variables
+├── .gitignore            # Git ignore rules
+├── static/
+│   ├── css/style.css     # Frontend styles
+│   └── js/app.js         # Frontend logic
+├── templates/
+│   ├── index.html        # Home page
+│   └── result.html       # Results page
+└── uploads/              # Temporary file uploads
+```

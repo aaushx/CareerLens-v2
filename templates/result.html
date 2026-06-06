@@ -23,6 +23,11 @@
     <!-- Layout Wrapper -->
     <div class="app-wrapper-lens">
 
+        <!-- ======== Mobile Sidebar Toggle ======== -->
+        <button class="navbar-mobile-toggle" id="sidebar-mobile-toggle" aria-label="Toggle sidebar" title="Menu">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <!-- ======== Sidebar ======== -->
         <aside class="sidebar-lens" id="sidebar">
             <div>
@@ -79,24 +84,24 @@
             <div class="tab-view-lens active" id="overview-tab-view">
                 
                 <!-- Header -->
-                <div class="canvas-header-lens d-flex justify-content-between align-items-start">
+                <div class="canvas-header-lens d-flex justify-content-between align-items-start gap-3 flex-column flex-lg-row">
                     <div>
                         <h1 class="canvas-title-lens">Executive Overview</h1>
                         <p class="canvas-subtitle-lens">Reviewing: <strong id="overview-filename-label">{{ filename or "Alexander_Davis_Lead_Dev.pdf" }}</strong></p>
                     </div>
-                    <div class="d-flex gap-2">
-                        <a href="/download_pdf" class="btn btn-pill btn-pill-secondary py-2" id="download-pdf-btn">
-                            <i class="fas fa-file-pdf me-1"></i> PDF Report
+                    <div class="d-flex gap-2 w-100 w-lg-auto flex-column flex-lg-row">
+                        <a href="/download_pdf" class="btn btn-pill btn-pill-secondary py-2 order-2 order-lg-1" id="download-pdf-btn">
+                            <i class="fas fa-file-pdf me-1"></i> <span class="d-none d-md-inline">PDF Report</span><span class="d-md-none">PDF</span>
                         </a>
-                        <a href="/" class="btn btn-pill btn-pill-primary py-2">
-                            <i class="fas fa-plus me-1"></i> New Scan
+                        <a href="/" class="btn btn-pill btn-pill-primary py-2 order-1 order-lg-2">
+                            <i class="fas fa-plus me-1"></i> <span class="d-none d-md-inline">New Scan</span><span class="d-md-none">New</span>
                         </a>
                     </div>
                 </div>
 
                 <!-- Core Metrics Widget -->
                 <div class="row mb-4">
-                    <div class="col-12">
+                    <div class="col-12 widget-ats-score">
                         <div class="card-widget-lens">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <span class="widget-title-lens m-0">Core Metrics</span>
@@ -153,7 +158,7 @@
                 <!-- Two Column Details -->
                 <div class="row g-4">
                     <!-- Left: AI Verdict -->
-                    <div class="col-lg-7">
+                    <div class="col-lg-7 widget-verdict">
                         <div class="card-widget-lens">
                             <div class="verdict-header-lens">
                                 <i class="fas fa-robot"></i> AI Verdict
@@ -177,7 +182,7 @@
                     </div>
 
                     <!-- Right: Quick Wins -->
-                    <div class="col-lg-5">
+                    <div class="col-lg-5 widget-recommendations">
                         <div class="card-widget-lens">
                             <div class="widget-title-lens">Quick Wins</div>
                             <div class="d-flex flex-column" id="quick-wins-list-wrapper">
@@ -195,14 +200,14 @@
             <div class="tab-view-lens" id="analysis-tab-view">
                 
                 <!-- Header -->
-                <div class="canvas-header-lens">
+                <div class="canvas-header-lens widget-header-analysis">
                     <h1 class="canvas-title-lens">Detailed Analysis</h1>
                     <p class="canvas-subtitle-lens">ATS Compliance checklists and prioritized formatting suggestions.</p>
                 </div>
 
                 <div class="row g-4">
                     <!-- Left: Suggestions -->
-                    <div class="col-lg-7">
+                    <div class="col-lg-7 widget-checklist-suggestions">
                         <div class="card-widget-lens">
                             <div class="widget-title-lens">Prioritized Structure Improvements</div>
                             <div class="d-flex flex-column gap-3" id="suggestions-list-wrapper">
@@ -212,7 +217,7 @@
                     </div>
 
                     <!-- Right: Compliance & Extraction Details -->
-                    <div class="col-lg-5 d-flex flex-column gap-4">
+                    <div class="col-lg-5 d-flex flex-column gap-4 widget-checklist-compliance">
                         <!-- ATS Compliance Card -->
                         <div class="card-widget-lens">
                             <div class="widget-title-lens">ATS Compliance</div>
@@ -256,7 +261,7 @@
             <div class="tab-view-lens" id="skills-tab-view">
                 
                 <!-- Header -->
-                <div class="canvas-header-lens">
+                <div class="canvas-header-lens widget-header-skills">
                     <h1 class="canvas-title-lens">Skills Intelligence &amp; Roadmap</h1>
                     <p class="canvas-subtitle-lens">Strategic skill gap analysis for target roles.</p>
                 </div>
@@ -264,7 +269,7 @@
                 <!-- Main Content Row -->
                 <div class="row g-4 mb-4">
                     <!-- Left: Missing Skills Intelligence -->
-                    <div class="col-lg-7">
+                    <div class="col-lg-7 widget-skill-gap">
                         <div class="card-widget-lens">
                             <div class="gap-analysis-header-lens">
                                 <span class="widget-title-lens m-0">Missing Skills Intelligence</span>
@@ -278,7 +283,7 @@
                     </div>
 
                     <!-- Right: Learning Roadmap -->
-                    <div class="col-lg-5">
+                    <div class="col-lg-5 widget-roadmap">
                         <div class="card-widget-lens">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <span class="widget-title-lens m-0">Learning Roadmap</span>
@@ -293,9 +298,9 @@
                 </div>
 
                 <!-- Bottom row: Charts -->
-                <div class="row g-4">
+                <div class="row g-4 widget-charts-row">
                     <!-- Radar Chart -->
-                    <div class="col-md-6">
+                    <div class="col-md-6 widget-chart-radar">
                         <div class="card-widget-lens">
                             <div class="widget-title-lens">Skill Coverage</div>
                             <div style="position: relative; height: 280px; width: 100%;">
@@ -305,7 +310,7 @@
                     </div>
 
                     <!-- Donut Chart -->
-                    <div class="col-md-6">
+                    <div class="col-md-6 widget-chart-donut">
                         <div class="card-widget-lens">
                             <div class="widget-title-lens">Experience Distribution</div>
                             <div style="position: relative; height: 280px; width: 100%;">
@@ -322,13 +327,13 @@
                  ========================================================== -->
             <div class="tab-view-lens" id="analytics-tab-view">
                 
-                <div class="canvas-header-lens">
+                <div class="canvas-header-lens widget-header-analytics">
                     <h1 class="canvas-title-lens">Analytics &amp; Breakdown</h1>
                     <p class="canvas-subtitle-lens">Deep dive into resume performance and suggestions statistics.</p>
                 </div>
 
                 <div class="row g-4 mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-6 widget-analytics-categories">
                         <!-- Category progress -->
                         <div class="card-widget-lens">
                             <div class="widget-title-lens">Category Match Progression</div>
@@ -338,7 +343,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-6 widget-analytics-summary">
                         <!-- Technical suggestions list -->
                         <div class="card-widget-lens">
                             <div class="widget-title-lens">Matches &amp; Gaps Summary</div>
@@ -367,12 +372,12 @@
                  ========================================================== -->
             <div class="tab-view-lens" id="history-tab-view">
                 
-                <div class="canvas-header-lens">
+                <div class="canvas-header-lens widget-header-history">
                     <h1 class="canvas-title-lens">Scan History</h1>
                     <p class="canvas-subtitle-lens">Review previous resume scanning logs stored in this browser cache.</p>
                 </div>
 
-                <div class="card-widget-lens">
+                <div class="card-widget-lens widget-history">
                     <div id="history-list-wrapper">
                         <!-- Loaded dynamically -->
                     </div>

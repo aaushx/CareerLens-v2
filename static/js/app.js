@@ -11,6 +11,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* =============================================
+       0. MOBILE SIDEBAR TOGGLE
+       ============================================= */
+    const sidebarMobileToggle = document.getElementById('sidebar-mobile-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const tabLinks = document.querySelectorAll('.sidebar-link-lens');
+
+    if (sidebarMobileToggle && sidebar) {
+        // Toggle sidebar on mobile/tablet
+        sidebarMobileToggle.addEventListener('click', () => {
+            if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+                sidebar.classList.toggle('collapsed');
+                // Trigger chart resize after collapse animation finishes
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 300);
+            } else {
+                sidebar.classList.toggle('show');
+                sidebarMobileToggle.setAttribute('aria-expanded', 
+                    sidebar.classList.contains('show') ? 'true' : 'false');
+            }
+        });
+
+        // Close sidebar when a tab link is clicked (on mobile)
+        tabLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) {
+                    sidebar.classList.remove('show');
+                    sidebarMobileToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+
+        // Close sidebar when clicking outside of it
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 768 && sidebar.classList.contains('show')) {
+                if (!sidebar.contains(e.target) && !sidebarMobileToggle.contains(e.target)) {
+                    sidebar.classList.remove('show');
+                    sidebarMobileToggle.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
+
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('show');
+                sidebar.classList.remove('collapsed');
+                sidebarMobileToggle.setAttribute('aria-expanded', 'false');
+            } else if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+                sidebar.classList.remove('show');
+            }
+        });
+    }
+
+    /* =============================================
        0.1 SCROLL REVEAL INITIALIZATION
        ============================================= */
     initScrollReveal();
@@ -18,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
     /* =============================================
        1. ROUTING & TAB SWITCHING
        ============================================= */
-    const tabLinks = document.querySelectorAll('.sidebar-link-lens');
     const tabViews = document.querySelectorAll('.tab-view-lens');
 
     if (tabLinks.length > 0) {
@@ -33,17 +87,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 tabLinks.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
 
-                // Toggle views
-                tabViews.forEach(view => {
-                    if (view.id === `${targetTab}-tab-view`) {
-                        view.classList.add('active');
-                    } else {
-                        view.classList.remove('active');
-                    }
-                });
+                if (window.innerWidth < 768) {
+                    // Smooth-scroll to target section on mobile
+                    let targetEl = null;
+                    if (targetTab === 'overview') targetEl = document.querySelector('.widget-ats-score');
+                    else if (targetTab === 'analysis') targetEl = document.querySelector('.widget-checklist-suggestions');
+                    else if (targetTab === 'skills') targetEl = document.querySelector('.widget-skill-gap');
+                    else if (targetTab === 'analytics') targetEl = document.querySelector('.widget-analytics-categories');
+                    else if (targetTab === 'history') targetEl = document.querySelector('.widget-history');
 
-                // Trigger chart resize
-                window.dispatchEvent(new Event('resize'));
+                    if (targetEl) {
+                        const yOffset = -90; 
+                        const y = targetEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                        window.scrollTo({ top: y, behavior: 'smooth' });
+                    }
+                } else {
+                    // Toggle views on desktop/tablet
+                    tabViews.forEach(view => {
+                        if (view.id === `${targetTab}-tab-view`) {
+                            view.classList.add('active');
+                        } else {
+                            view.classList.remove('active');
+                        }
+                    });
+
+                    // Trigger chart resize
+                    window.dispatchEvent(new Event('resize'));
+                }
             });
         });
     }
@@ -676,16 +746,16 @@ function renderHistoryTab() {
             const formattedDate = new Date(run.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             html += `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.9rem;">
-                    <td class="py-3">
-                        <div class="fw-semibold text-white">${formattedDate}</div>
-                        <div class="text-muted small">${run.filename}</div>
+                    <td class="py-3" data-label="Date / File">
+                        <div class="fw-semibold text-white d-inline-block d-md-block">${formattedDate}</div>
+                        <div class="text-muted small d-inline-block d-md-block ms-2 ms-md-0">${run.filename}</div>
                     </td>
-                    <td class="py-3"><span class="badge bg-dark border border-secondary border-opacity-10 rounded-pill px-3 py-1 font-monospace">${run.extraction_method}</span></td>
-                    <td class="py-3">${run.skill_match.toFixed(1)}%</td>
-                    <td class="py-3">${run.semantic_match.toFixed(1)}%</td>
-                    <td class="py-3">${run.resume_strength.toFixed(1)}% (${run.badge})</td>
-                    <td class="py-3 fw-bold text-white">${run.final_score.toFixed(1)}%</td>
-                    <td class="py-3 text-end">
+                    <td class="py-3" data-label="Parsing Method"><span class="badge bg-dark border border-secondary border-opacity-10 rounded-pill px-3 py-1 font-monospace">${run.extraction_method}</span></td>
+                    <td class="py-3" data-label="Skill Match">${run.skill_match.toFixed(1)}%</td>
+                    <td class="py-3" data-label="Semantic">${run.semantic_match.toFixed(1)}%</td>
+                    <td class="py-3" data-label="Strength">${run.resume_strength.toFixed(1)}% (${run.badge})</td>
+                    <td class="py-3 fw-bold text-white" data-label="Score">${run.final_score.toFixed(1)}%</td>
+                    <td class="py-3 text-end" data-label="Actions">
                         <button class="btn btn-sm btn-pill btn-pill-primary py-1 px-3" onclick="reloadHistoricalScan(${run.id})">Reload</button>
                     </td>
                 </tr>

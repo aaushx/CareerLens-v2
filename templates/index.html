@@ -85,7 +85,7 @@
             <a class="navbar-brand-lens" href="/">
                 <i class="fas fa-clone"></i> CareerLens
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#landingNavbar">
+            <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#landingNavbar" aria-controls="landingNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
@@ -215,34 +215,35 @@
                     </div>
 
                     <form id="analyzer-form" method="POST" action="/upload" enctype="multipart/form-data">
-                        
-                        <!-- Drag-and-drop PDF Uploader -->
-                        <div class="mb-4">
-                            <div class="glass-uploader-lens" id="upload-area">
-                                <i class="fas fa-file-pdf"></i>
-                                <h6 class="fw-bold text-white mb-1">Click to browse or drag &amp; drop resume</h6>
-                                <p class="text-muted small mb-0">PDF files only (max 10MB)</p>
-                                <input type="file" id="file-input" name="resume" accept=".pdf" class="d-none" required>
-                            </div>
-                            <div class="file-name-badge d-none mt-3 p-3 rounded-3 bg-white bg-opacity-5 d-flex align-items-center justify-content-between border border-secondary border-opacity-25" id="file-name-badge">
-                                <span class="small font-bold"><i class="fas fa-circle-check text-success me-2"></i>Selected: <span id="file-display-name"></span></span>
-                            </div>
-                        </div>
-
-                        <!-- Job Description Requirements -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold mb-2">Target Job Description</label>
-                            
-                            <!-- Role samples -->
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('swe')">Software Engineer</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('frontend')">Frontend Dev</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('backend')">Backend Dev</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('data')">Data Analyst</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('ml')">ML Engineer</button>
+                        <div class="row g-4 mb-4">
+                            <!-- Left Column: Drag-and-drop PDF Uploader -->
+                            <div class="col-lg-6">
+                                <div class="glass-uploader-lens" id="upload-area">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <h6 class="fw-bold text-white mb-1">Click to browse or drag &amp; drop resume</h6>
+                                    <p class="text-muted small mb-0">PDF files only (max 10MB)</p>
+                                    <input type="file" id="file-input" name="resume" accept=".pdf" class="d-none" required>
+                                </div>
+                                <div class="file-name-badge d-none mt-3 p-3 rounded-3 bg-white bg-opacity-5 d-flex align-items-center justify-content-between border border-secondary border-opacity-25" id="file-name-badge">
+                                    <span class="small font-bold"><i class="fas fa-circle-check text-success me-2"></i>Selected: <span id="file-display-name"></span></span>
+                                </div>
                             </div>
 
-                            <textarea class="form-control bg-dark border border-secondary border-opacity-25 rounded-3 text-main p-3 shadow-none" id="job-description" name="job_description" rows="7" placeholder="Paste the job requirements description here (minimum 20 characters)..." required style="resize: none;"></textarea>
+                            <!-- Right Column: Job Description Requirements -->
+                            <div class="col-lg-6">
+                                <label class="form-label fw-bold mb-2">Target Job Description</label>
+                                
+                                <!-- Role samples -->
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('swe')">Software Engineer</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('frontend')">Frontend Dev</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('backend')">Backend Dev</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('data')">Data Analyst</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('ml')">ML Engineer</button>
+                                </div>
+
+                                <textarea class="form-control bg-dark border border-secondary border-opacity-25 rounded-3 text-main p-3 shadow-none" id="job-description" name="job_description" rows="7" placeholder="Paste the job requirements description here (minimum 20 characters)..." required style="resize: none;"></textarea>
+                            </div>
                         </div>
 
                         <!-- Submit Button -->

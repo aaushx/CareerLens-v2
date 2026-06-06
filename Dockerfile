@@ -20,7 +20,8 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Model will be lazy-loaded on first use to save memory during startup
-# (Pre-downloading causes OOM on free-tier Render: 512MB RAM limit)
+# Includes fallback to keyword-based matching if model loading fails
+# (This allows the app to work on Render free tier: 512MB RAM limit)
 
 # Copy the rest of the application files
 COPY . .
@@ -36,7 +37,8 @@ ENV PORT=5000
 ENV FLASK_ENV=production
 ENV TESSERACT_CMD=/usr/bin/tesseract
 
-# Start application using Gunicorn
-# Note: --workers 1 for free tier (RAM limited)
-# --timeout 120 because model loading on first request takes time
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --timeout 120 --max-requests 100 app:app"]
+# Start application using Gunicorn with memory optimization
+# --workers 1: Single worker for minimal memory usage (free tier constraint)
+# --timeout 180: Allow up to 3min for model loading on first request
+# --max-requests 100: Restart worker periodically to avoid memory creep
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --timeout 180 --max-requests 100 app:app"]

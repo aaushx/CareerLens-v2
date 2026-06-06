@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerLens — See Your Resume Through a Recruiter's Eyes</title>
+    <meta name="description" content="Get ATS scores, semantic analysis, skill gap detection, OCR extraction, and personalized learning roadmaps instantly.">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <!-- ============ Loading Overlay (Image 4) ============ -->
+    <div class="loading-overlay-lens" id="loading-overlay">
+        <div class="loader-card-lens">
+            
+            <!-- Spinner -->
+            <div class="loader-spinner-wrap-lens">
+                <svg class="loader-spinner-svg-lens" width="160" height="160">
+                    <circle class="loader-spinner-bg-lens" stroke-width="6" r="70" cx="80" cy="80" />
+                    <circle id="loader-fill-circle" class="loader-spinner-fill-lens" stroke-width="6" r="70" cx="80" cy="80" stroke-dasharray="439.82" stroke-dashoffset="439.82" />
+                </svg>
+                <div class="loader-spinner-text-lens">
+                    <span class="loader-pct-lens" id="loader-pct">0%</span>
+                    <span class="loader-sub-lens">PROCESSING</span>
+                </div>
+            </div>
+
+            <!-- Steps checklist -->
+            <div class="loader-steps-lens">
+                <div class="loader-step-item-lens active" id="step-extract">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <div>
+                        <div class="loader-step-title-lens">Extracting Resume Data</div>
+                        <div class="loader-step-desc-lens">Reading file bytes...</div>
+                    </div>
+                </div>
+                <div class="loader-step-item-lens" id="step-ocr">
+                    <i class="far fa-circle"></i>
+                    <div>
+                        <div class="loader-step-title-lens">Running OCR &amp; Text Recognition</div>
+                        <div class="loader-step-desc-lens">Extracting document layers...</div>
+                    </div>
+                </div>
+                <div class="loader-step-item-lens" id="step-skills">
+                    <i class="far fa-circle"></i>
+                    <div>
+                        <div class="loader-step-title-lens">Matching Skills to Industry Standards</div>
+                        <div class="loader-step-desc-lens">Cross-referencing 500+ data points...</div>
+                    </div>
+                </div>
+                <div class="loader-step-item-lens" id="step-ats">
+                    <i class="far fa-circle"></i>
+                    <div>
+                        <div class="loader-step-title-lens">Calculating ATS Score</div>
+                        <div class="loader-step-desc-lens">Running semantic analysis models...</div>
+                    </div>
+                </div>
+                <div class="loader-step-item-lens" id="step-report">
+                    <i class="far fa-circle"></i>
+                    <div>
+                        <div class="loader-step-title-lens">Generating Insights &amp; Recommendations</div>
+                        <div class="loader-step-desc-lens">Mapping personalized roadmaps...</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <button class="loader-cancel-btn-lens" id="cancel-analysis">
+            <i class="fas fa-xmark"></i> Cancel Analysis
+        </button>
+    </div>
+
+    <!-- ============ Navbar ============ -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent pt-4">
+        <div class="container px-4">
+            <a class="navbar-brand-lens" href="/">
+                <i class="fas fa-clone"></i> CareerLens
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#landingNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="landingNavbar">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-2">
+                    <li class="nav-item">
+                        <a class="landing-nav-link active" href="#">Product</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="landing-nav-link" href="#features-section">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="landing-nav-link" href="#about-section">About</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-pill btn-pill-primary" id="analyze-trigger-btn">Analyze Resume</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============ Hero Canvas ============ -->
+    <main class="container px-4 py-5" style="margin-top: 4rem;">
+        <div class="row align-items-center g-5">
+            
+            <!-- Left Text Content -->
+            <div class="col-lg-6">
+                <span class="hero-badge-lens">
+                    <i class="fas fa-wand-magic-sparkles"></i> Powered by Next-Gen AI
+                </span>
+                
+                <h1 class="hero-title-lens">
+                    See your resume through<br><span>a recruiter's eyes.</span>
+                </h1>
+                
+                <p class="hero-subtitle-lens">
+                    Get ATS scores, semantic analysis, skill gap detection, OCR extraction, and personalized improvement recommendations in seconds.
+                </p>
+                
+                <div class="d-flex flex-wrap gap-3">
+                    <button class="btn btn-pill btn-pill-primary px-4 py-3" onclick="document.getElementById('analyze-trigger-btn').click();">
+                        Analyze Resume
+                    </button>
+                    <button class="btn btn-pill btn-pill-secondary px-4 py-3" onclick="runDemoScan();">
+                        Try Demo Resume
+                    </button>
+                </div>
+
+                <div class="social-proof-lens">
+                    <div class="avatar-group-lens">
+                        <div class="avatar-pill-lens" style="background-color: #fca5a5; color: #000;">JD</div>
+                        <div class="avatar-pill-lens" style="background-color: #86efac; color: #000;">AS</div>
+                        <div class="avatar-pill-lens" style="background-color: #93c5fd; color: #000;">MK</div>
+                    </div>
+                    <span class="small text-secondary" style="font-weight: 550;">Trusted by 10,000+ professionals</span>
+                </div>
+            </div>
+
+            <!-- Right Graphic Mockup -->
+            <div class="col-lg-6">
+                <div class="mockup-container-lens">
+                    
+                    <!-- Candidate Profile Mockup Card -->
+                    <div class="mockup-base-card">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <span class="small text-muted font-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Candidate Profile</span>
+                                <h5 class="fw-bold mb-0 mt-1">Senior Product Designer</h5>
+                            </div>
+                        </div>
+                        
+                        <div class="mockup-line short accent" style="height: 12px; margin-bottom: 1.5rem;"></div>
+                        <div class="mockup-line"></div>
+                        <div class="mockup-line medium"></div>
+                        <div class="mockup-line"></div>
+                        <div class="mockup-line short"></div>
+                    </div>
+
+                    <!-- Floating ATS Score Card -->
+                    <div class="floating-score-card">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted font-bold" style="font-size: 0.55rem; text-transform: uppercase;">ATS Score</span>
+                            <span class="text-success font-bold" style="font-size: 0.65rem;">+12%</span>
+                        </div>
+                        <div class="d-flex align-items-baseline mt-2">
+                            <span class="fs-2 fw-extrabold text-white">94</span>
+                            <span class="text-muted small ms-1">/100</span>
+                        </div>
+                        <div class="mockup-line mt-2" style="height: 3px; background-color: var(--success); border-radius: 2px;"></div>
+                    </div>
+
+                    <!-- Floating Skill Gap Card -->
+                    <div class="floating-gap-card">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="feature-icon-box-lens m-0" style="width:24px; height:24px; font-size: 0.75rem;"><i class="fas fa-network-wired"></i></span>
+                            <span class="font-bold text-white" style="font-size: 0.75rem;">Skill Gap Analysis</span>
+                        </div>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="d-flex justify-content-between align-items-center small">
+                                <span class="text-secondary">React.js</span>
+                                <i class="fas fa-circle-check text-success" style="font-size: 0.8rem;"></i>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center small">
+                                <span class="text-secondary">TypeScript</span>
+                                <i class="fas fa-circle-check text-success" style="font-size: 0.8rem;"></i>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center small">
+                                <span class="text-secondary">GraphQL</span>
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill py-0 px-2" style="font-size: 0.6rem;">Missing</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ============ Upload Panel ============ -->
+        <div class="row justify-content-center d-none" id="upload-drawer">
+            <div class="col-lg-10">
+                <div class="upload-drawer-lens">
+                    <div class="mb-4 text-center">
+                        <h4 class="fw-bold">Executive Upload Portal</h4>
+                        <p class="text-secondary small">Upload your resume in PDF format to cross-reference against requirements.</p>
+                    </div>
+
+                    <form id="analyzer-form" method="POST" action="/upload" enctype="multipart/form-data">
+                        
+                        <!-- Drag-and-drop PDF Uploader -->
+                        <div class="mb-4">
+                            <div class="glass-uploader-lens" id="upload-area">
+                                <i class="fas fa-file-pdf"></i>
+                                <h6 class="fw-bold text-white mb-1">Click to browse or drag &amp; drop resume</h6>
+                                <p class="text-muted small mb-0">PDF files only (max 10MB)</p>
+                                <input type="file" id="file-input" name="resume" accept=".pdf" class="d-none" required>
+                            </div>
+                            <div class="file-name-badge d-none mt-3 p-3 rounded-3 bg-white bg-opacity-5 d-flex align-items-center justify-content-between border border-secondary border-opacity-25" id="file-name-badge">
+                                <span class="small font-bold"><i class="fas fa-circle-check text-success me-2"></i>Selected: <span id="file-display-name"></span></span>
+                            </div>
+                        </div>
+
+                        <!-- Job Description Requirements -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold mb-2">Target Job Description</label>
+                            
+                            <!-- Role samples -->
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('swe')">Software Engineer</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('frontend')">Frontend Dev</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('backend')">Backend Dev</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('data')">Data Analyst</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('ml')">ML Engineer</button>
+                            </div>
+
+                            <textarea class="form-control bg-dark border border-secondary border-opacity-25 rounded-3 text-main p-3 shadow-none" id="job-description" name="job_description" rows="7" placeholder="Paste the job requirements description here (minimum 20 characters)..." required style="resize: none;"></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-pill btn-pill-primary w-100 py-3 fw-bold mt-2" id="submit-btn">
+                            Analyze Resume Match
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ Features Grid ============ -->
+        <div class="row features-title-wrap reveal-on-scroll" id="features-section">
+            <div class="col-12">
+                <h2 class="fs-1 fw-bold text-white mb-2">Comprehensive Analysis Tools</h2>
+                <p class="text-secondary small">Everything you need to ensure your resume passes the algorithms and impresses the hiring managers.</p>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-6 col-lg-3 reveal-on-scroll delay-1">
+                <div class="feature-card-lens">
+                    <div class="feature-icon-box-lens">
+                        <i class="fas fa-gauge-high"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3 text-white">ATS Scoring Engine</h5>
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">
+                        Our advanced parsing technology simulates exactly how enterprise Applicant Tracking Systems read your document, providing a precise pass/fail probability.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 reveal-on-scroll delay-2">
+                <div class="feature-card-lens">
+                    <div class="feature-icon-box-lens">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3 text-white">Skill Gap Analysis</h5>
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">
+                        Compare your extracted skills against live job descriptions to identify crucial missing keywords instantly.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 reveal-on-scroll delay-3">
+                <div class="feature-card-lens">
+                    <div class="feature-icon-box-lens">
+                        <i class="fas fa-road"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3 text-white">Learning Roadmaps</h5>
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">
+                        Based on identified gaps, receive automated, step-by-step learning paths to acquire high-value skills.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 reveal-on-scroll delay-4">
+                <div class="feature-card-lens">
+                    <div class="feature-icon-box-lens">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3 text-white">Actionable PDF Reports</h5>
+                    <p class="text-secondary small mb-0" style="line-height: 1.6;">
+                        Export beautifully formatted, executive-style reports detailing every aspect of your semantic analysis to share with career coaches.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ About Description Section ============ -->
+        <div class="row features-title-wrap reveal-on-scroll" id="about-section" style="margin-top: 8rem; margin-bottom: 2rem;">
+            <div class="col-lg-10 mx-auto text-center">
+                <h2 class="fs-1 fw-bold text-white mb-3">About CareerLens</h2>
+                <p class="text-secondary small mb-0" style="line-height: 1.8; font-size: 0.925rem; max-width: 800px; margin: 0 auto;">
+                    CareerLens is a premium recruiting intelligence platform designed to bridge the gap between talented job seekers and algorithmic hiring pipelines. By integrating advanced semantic models, natural language parsing, and structural analysis, CareerLens decodes the exact requirements of job descriptions and matches them contextually against candidates' resumes. We empower professionals to demystify Applicant Tracking Systems (ATS), target key technical keywords, plan personalized skills roadmaps, and present their qualifications with unparalleled clarity and precision.
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============ Footer ============ -->
+    <footer class="border-top border-secondary border-opacity-10 py-5 mt-5" id="footer-lens">
+        <div class="container px-4">
+            <div class="row align-items-center justify-content-between g-4">
+                <div class="col-md-6 text-center text-md-start">
+                    <h5 class="fw-extrabold text-white mb-2"><i class="fas fa-clone"></i> CareerLens</h5>
+                    <p class="text-secondary small mb-0">&copy; 2026 CareerLens. Precision in every pixel.</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-4">
+                        <a href="#" class="text-secondary small hover-white">Privacy Policy</a>
+                        <a href="#" class="text-secondary small hover-white">Terms of Service</a>
+                        <a href="#" class="text-secondary small hover-white">Cookie Policy</a>
+                        <a href="#" class="text-secondary small hover-white">Security</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
+
+</body>
+</html>

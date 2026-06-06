@@ -142,9 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
        5. INITIALIZE DASHBOARD WITH SERVER DATA
        ============================================= */
     if (window.CL_INITIAL_DATA && window.CL_INITIAL_DATA.success) {
-        // Save scan payload to localStorage history
-        saveScanToHistory(window.CL_INITIAL_DATA);
-        
         // Render the current server-provided payload
         renderDashboardState(window.CL_INITIAL_DATA);
     }
@@ -639,124 +636,118 @@ function toggleSkillCollapse(header) {
 }
 
 /* =============================================
-   9. LOCAL HISTORY LOGGER & RETRIEVAL
+   9. DATABASE-BACKED HISTORY MANAGEMENT
    ============================================= */
-function saveScanToHistory(results) {
-    let history = JSON.parse(localStorage.getItem('cl_history') || '[]');
-    
-    const runInfo = {
-        id: Date.now(),
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        score: results.metrics.final_score,
-        skill_match: results.metrics.skill_match,
-        semantic_match: results.metrics.semantic_match,
-        strength: results.metrics.resume_strength,
-        badge: results.metrics.badge,
-        method: results.extraction_method,
-        filename: results.filename || "Alexander_Davis_Lead_Dev.pdf",
-        full_payload: results // Save entire payload for instant local reloading!
-    };
-
-    // Prevent immediate duplication
-    if (history.length > 0 && history[0].score === runInfo.score && history[0].strength === runInfo.strength) {
-        return;
-    }
-
-    history.unshift(runInfo);
-    history = history.slice(0, 10);
-    localStorage.setItem('cl_history', JSON.stringify(history));
-}
 
 function renderHistoryTab() {
     const listWrapper = document.getElementById('history-list-wrapper');
     if (!listWrapper) return;
 
-    const history = JSON.parse(localStorage.getItem('cl_history') || '[]');
-    if (history.length === 0) {
-        listWrapper.innerHTML = `
-            <div class="text-center py-5 text-muted">
-                <i class="fas fa-history mb-3 fs-1" style="opacity: 0.3;"></i>
-                <p class="mb-0">No previous scan reports found. Run a new scan first!</p>
-            </div>
-        `;
-        return;
-    }
+    fetch('/api/history')
+    .then(response => response.json())
+    .then(history => {
+        if (history.length === 0) {
+            listWrapper.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-history mb-3 fs-1" style="opacity: 0.3;"></i>
+                    <p class="mb-0">No previous scan reports found. Run a new scan first!</p>
+                </div>
+            `;
+            return;
+        }
 
-    let html = '<div class="table-responsive"><table class="table table-dark table-hover border-0 align-middle">';
-    html += `
-        <thead>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.8rem; color: #64748b;">
-                <th scope="col" class="py-3">DATE / FILE</th>
-                <th scope="col" class="py-3">PARSING METHOD</th>
-                <th scope="col" class="py-3">SKILL MATCH</th>
-                <th scope="col" class="py-3">SEMANTIC</th>
-                <th scope="col" class="py-3">STRENGTH</th>
-                <th scope="col" class="py-3">SCORE</th>
-                <th scope="col" class="py-3 text-end">ACTIONS</th>
-            </tr>
-        </thead>
-        <tbody>
-    `;
-
-    history.forEach((run, idx) => {
+        let html = '<div class="table-responsive"><table class="table table-dark table-hover border-0 align-middle">';
         html += `
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.9rem;">
-                <td class="py-3">
-                    <div class="fw-semibold text-white">${run.date}</div>
-                    <div class="text-muted small">${run.filename}</div>
-                </td>
-                <td class="py-3"><span class="badge bg-dark border border-secondary border-opacity-10 rounded-pill px-3 py-1 font-monospace">${run.method}</span></td>
-                <td class="py-3">${run.skill_match.toFixed(1)}%</td>
-                <td class="py-3">${run.semantic_match.toFixed(1)}%</td>
-                <td class="py-3">${run.strength.toFixed(1)}% (${run.badge})</td>
-                <td class="py-3 fw-bold text-white">${run.score.toFixed(1)}%</td>
-                <td class="py-3 text-end">
-                    <button class="btn btn-sm btn-pill btn-pill-primary py-1 px-3" onclick="reloadHistoricalScan(${run.id})">Reload</button>
-                </td>
-            </tr>
+            <thead>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.8rem; color: #64748b;">
+                    <th scope="col" class="py-3">DATE / FILE</th>
+                    <th scope="col" class="py-3">PARSING METHOD</th>
+                    <th scope="col" class="py-3">SKILL MATCH</th>
+                    <th scope="col" class="py-3">SEMANTIC</th>
+                    <th scope="col" class="py-3">STRENGTH</th>
+                    <th scope="col" class="py-3">SCORE</th>
+                    <th scope="col" class="py-3 text-end">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
         `;
-    });
 
-    html += '</tbody></table></div>';
-    listWrapper.innerHTML = html;
+        history.forEach((run, idx) => {
+            const formattedDate = new Date(run.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            html += `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.9rem;">
+                    <td class="py-3">
+                        <div class="fw-semibold text-white">${formattedDate}</div>
+                        <div class="text-muted small">${run.filename}</div>
+                    </td>
+                    <td class="py-3"><span class="badge bg-dark border border-secondary border-opacity-10 rounded-pill px-3 py-1 font-monospace">${run.extraction_method}</span></td>
+                    <td class="py-3">${run.skill_match.toFixed(1)}%</td>
+                    <td class="py-3">${run.semantic_match.toFixed(1)}%</td>
+                    <td class="py-3">${run.resume_strength.toFixed(1)}% (${run.badge})</td>
+                    <td class="py-3 fw-bold text-white">${run.final_score.toFixed(1)}%</td>
+                    <td class="py-3 text-end">
+                        <button class="btn btn-sm btn-pill btn-pill-primary py-1 px-3" onclick="reloadHistoricalScan(${run.id})">Reload</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table></div>';
+        listWrapper.innerHTML = html;
+    })
+    .catch(err => {
+        console.error("Error fetching history:", err);
+        listWrapper.innerHTML = `<div class="text-center py-5 text-danger">Error loading scan history from server.</div>`;
+    });
 }
 
 /**
- * Reloads a historical scan locally, redraws gauges/charts, and updates the PDF session.
+ * Reloads a historical scan from the database, updates session results, and redraws gauges/charts.
  */
 function reloadHistoricalScan(scanId) {
-    const history = JSON.parse(localStorage.getItem('cl_history') || '[]');
-    const match = history.find(run => run.id === scanId);
-    
-    if (!match || !match.full_payload) {
-        alert("Could not load report logs.");
-        return;
-    }
-
-    // 1. Send current payload to backend /set_session_results via fetch
-    // so that if the user clicks "PDF Report" (/download_pdf) it matches the loaded run!
-    fetch('/set_session_results', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(match.full_payload)
-    })
+    fetch(`/api/history/${scanId}`)
     .then(response => response.json())
     .then(data => {
-        if (!data.success) {
-            console.error("Failed to sync backend session.");
+        if (!data.success || !data.results) {
+            alert("Could not load report logs.");
+            return;
+        }
+
+        // Synchronize all UI metrics, timelines, lists, charts
+        renderDashboardState(data.results);
+
+        // Smooth transition to Overview tab
+        const overviewLink = document.querySelector('.sidebar-link-lens[data-tab="overview"]');
+        if (overviewLink) {
+            overviewLink.click();
         }
     })
-    .catch(err => console.error("Session sync error:", err));
+    .catch(err => {
+        console.error("Error loading scan:", err);
+        alert("Failed to connect to the database to reload scan.");
+    });
+}
 
-    // 2. Synchronize all UI metrics, timelines, lists, charts
-    renderDashboardState(match.full_payload);
-
-    // 3. Smooth transition to Overview tab
-    const overviewLink = document.querySelector('.sidebar-link-lens[data-tab="overview"]');
-    if (overviewLink) {
-        overviewLink.click();
+/**
+ * Clears all scan history for the current visitor in the database.
+ */
+function clearDatabaseHistory() {
+    if (confirm("Are you sure you want to permanently erase your scan history logs?")) {
+        fetch('/api/history/clear', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert("Failed to clear database logs.");
+            }
+        })
+        .catch(err => {
+            console.error("Error clearing logs:", err);
+            alert("Error connecting to server to clear logs.");
+        });
     }
 }
 

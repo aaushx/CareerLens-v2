@@ -396,9 +396,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="fw-bold mb-1">Clear Search Logs</h6>
-                            <p class="text-secondary small mb-0">Erase cached scan runs in localStorage.</p>
+                            <p class="text-secondary small mb-0">Erase cached scan runs in the database.</p>
                         </div>
-                        <button class="btn btn-sm btn-outline-danger" onclick="localStorage.removeItem('cl_history'); window.location.reload();">Clear History</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="clearDatabaseHistory();">Clear History</button>
                     </div>
                 </div>
             </div>

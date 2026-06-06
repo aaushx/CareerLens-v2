@@ -32,6 +32,15 @@ app = Flask(__name__)
 # Secret key for session management
 app.secret_key = "ats-secret-key-optimization-platform-2026"
 
+import uuid
+import database
+database.init_db()
+
+@app.before_request
+def ensure_session_id():
+    if "session_id" not in session:
+        session["session_id"] = str(uuid.uuid4())
+
 # -------------------------------
 # Upload Folder Setup
 # -------------------------------
@@ -1004,6 +1013,13 @@ def upload():
 
     results = perform_analysis(extracted_text, job_description, filename, extraction_method)
     session["results"] = results
+    
+    # Save scan to SQLite database
+    try:
+        database.save_scan(session["session_id"], filename, extraction_method, job_description, results)
+    except Exception as e:
+        print(f"Error saving scan to database: {e}")
+        
     return render_template("result.html", results_json=results, **results)
 
 # -------------------------------
@@ -1063,7 +1079,57 @@ def demo():
         
     results = perform_analysis(demo_resume_text, job_description, "Alexander_Davis_Lead_Dev.pdf", "Demo Resume Parsing")
     session["results"] = results
+    
+    # Save scan to SQLite database
+    try:
+        database.save_scan(session["session_id"], "Alexander_Davis_Lead_Dev.pdf", "Demo Resume Parsing", job_description, results)
+    except Exception as e:
+        print(f"Error saving scan to database: {e}")
+        
     return render_template("result.html", results_json=results, **results)
+
+# -------------------------------
+# API History Endpoints
+# -------------------------------
+@app.route("/api/history", methods=["GET"])
+def api_history():
+    session_id = session.get("session_id")
+    if not session_id:
+        return jsonify([])
+    try:
+        scans = database.get_scans(session_id)
+        return jsonify(scans)
+    except Exception as e:
+        print(f"Error fetching history: {e}")
+        return jsonify([]), 500
+
+@app.route("/api/history/<int:scan_id>", methods=["GET"])
+def api_get_scan(scan_id):
+    session_id = session.get("session_id")
+    if not session_id:
+        return jsonify({"success": False, "error": "No session session_id"}), 400
+    try:
+        results = database.get_scan(scan_id, session_id)
+        if results:
+            # Sync session results so PDF generation works for reloaded runs!
+            session["results"] = results
+            return jsonify({"success": True, "results": results})
+        return jsonify({"success": False, "error": "Scan not found or unauthorized"}), 404
+    except Exception as e:
+        print(f"Error fetching scan details: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/history/clear", methods=["POST"])
+def api_clear_history():
+    session_id = session.get("session_id")
+    if not session_id:
+        return jsonify({"success": False, "error": "No session session_id"}), 400
+    try:
+        database.clear_scans(session_id)
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"Error clearing history: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 # -------------------------------
 # Set Session Results (POST)

@@ -79,6 +79,30 @@ The application automatically creates a local SQLite database file named `career
 
 ---
 
+## Production Deployment (Oracle Cloud Always Free - RECOMMENDED)
+
+**Oracle Cloud Always Free tier is the best option for CareerLens** because:
+- ✅ **2GB RAM** (plenty for the Sentence Transformer model)
+- ✅ **Always free** (never expires, no credit card needed after trial)
+- ✅ Full Docker support
+- ✅ 20GB persistent storage
+
+### Quick Start (5 minutes)
+
+1. **Create Oracle Cloud Account**: https://www.oracle.com/cloud/free/
+2. **Launch Always Free VM** with 2GB RAM
+3. **Deploy with Docker**:
+   ```bash
+   git clone https://github.com/aaushx/CareerLens-v1.git
+   cd CareerLens-v1
+   docker-compose up -d
+   ```
+4. **Access at**: `http://your-instance-ip:5000`
+
+👉 **Full detailed guide**: See [ORACLE_CLOUD_SETUP.md](ORACLE_CLOUD_SETUP.md)
+
+---
+
 ## Production Deployment (Render + Docker)
 
 Since **Sentence Transformers** and **PyTorch** can have a heavy disk and memory footprint, deploying standard packages directly can exceed free-tier limitations (e.g. Render's 512MB RAM ceiling). 

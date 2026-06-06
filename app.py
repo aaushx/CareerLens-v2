@@ -7,7 +7,7 @@ from flask import Flask, render_template, request, jsonify, send_file, session
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 
 # Load environment variables from .env file
 load_dotenv()

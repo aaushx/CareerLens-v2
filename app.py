@@ -26,7 +26,17 @@ if os.path.exists(TESSERACT_PATH):
 # -------------------------------
 # Load Transformer Model
 # -------------------------------
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = None
+
+def get_model():
+    global model
+
+    if model is None:
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    return model
+
+print("Flask started")
 
 app = Flask(__name__)
 # Secret key for session management
@@ -578,8 +588,8 @@ def perform_analysis(extracted_text, job_description, filename, extraction_metho
         skill_match_percentage = 100.00
 
     # NLP Semantic Similarity
-    resume_embedding = model.encode([extracted_text])
-    jd_embedding = model.encode([job_description])
+    resume_embedding = get_model().encode([extracted_text])
+    jd_embedding = get_model().encode([job_description])
     
     similarity_score = cosine_similarity(resume_embedding, jd_embedding)[0][0]
     # Bound and scale to [0, 100]

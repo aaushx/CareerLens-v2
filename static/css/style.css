@@ -1404,13 +1404,7 @@ textarea.form-control.bg-dark:focus {
         padding: 2rem;
     }
 
-    /* ─ Grid Layout: 2 columns ─ */
-    .col-md-6, .col-lg-7, .col-lg-5 {
-        width: calc(50% - 0.5rem) !important;
-    }
-    .row.g-4 {
-        gap: 1rem !important;
-    }
+
 
     /* ─ Forms ─ */
     .form-control, textarea.form-control {
@@ -1525,10 +1519,7 @@ textarea.form-control.bg-dark:focus {
         padding: 2.5rem;
     }
 
-    /* ─ Features Grid ─ */
-    .row.g-4 {
-        gap: 1.5rem !important;
-    }
+
 }
 
 /* ── Laptop (1024px–1439px) ── */
@@ -1544,13 +1535,7 @@ textarea.form-control.bg-dark:focus {
         padding: 1.75rem;
     }
 
-    /* ─ Grid: Responsive ─ */
-    .col-lg-7 {
-        width: calc(60% - 0.5rem) !important;
-    }
-    .col-lg-5 {
-        width: calc(40% - 0.5rem) !important;
-    }
+
 }
 
 /* ── Desktop (1440px+) ── */
@@ -1566,10 +1551,7 @@ textarea.form-control.bg-dark:focus {
         padding: 2rem;
     }
 
-    /* ─ Large screen spacing ─ */
-    .row.g-4 {
-        gap: 2rem !important;
-    }
+
 }
 
 /* ── Large Displays (2560px+) ── */

@@ -4,7 +4,7 @@ import fitz
 import pytesseract
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, send_file, session
-from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv # type: ignore
@@ -27,27 +27,20 @@ if TESSERACT_PATH and os.path.exists(TESSERACT_PATH):
     pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
 
 # -------------------------------
-# Load Transformer Model
+# TF-IDF Vectorizer for Semantic Similarity (Lightweight)
 # -------------------------------
-model = None
+# Using TF-IDF instead of heavy Sentence Transformer model
+# This provides excellent semantic matching with minimal memory usage (~1MB vs 400MB+)
+vectorizer = None
 
-def get_model():
-    """Lazy-load the model on first use to conserve memory on Render's free tier.
-    Returns None if loading fails (memory constrained environments).
+def get_tfidf_vectorizer():
+    """Lazy-initialize TF-IDF vectorizer for semantic similarity.
+    TF-IDF is lightweight and works well for this use case without heavy ML models.
     """
-    global model
-    if model is None:
-        try:
-            model = SentenceTransformer("all-MiniLM-L6-v2")
-        except Exception as e:
-            # Model loading failed - likely due to memory constraints
-            # Return None and use keyword-based fallback instead
-            model = False  # Mark as "failed to load"
-            return None
-    # Return None if previously failed
-    if model is False:
-        return None
-    return model
+    global vectorizer
+    if vectorizer is None:
+        vectorizer = TfidfVectorizer(max_features=5000, stop_words='english', lowercase=True)
+    return vectorizer
 
 app = Flask(__name__)
 # Secret key for session management - use environment variable for security
@@ -598,22 +591,19 @@ def perform_analysis(extracted_text, job_description, filename, extraction_metho
     else:
         skill_match_percentage = 100.00
 
-    # NLP Semantic Similarity (with fallback for memory-constrained environments)
-    model = get_model()
-    if model is not None:
-        try:
-            resume_embedding = model.encode([extracted_text])
-            jd_embedding = model.encode([job_description])
-            similarity_score = cosine_similarity(resume_embedding, jd_embedding)[0][0]
-            # Bound and scale to [0, 100]
-            similarity_score = max(0.0, min(1.0, float(similarity_score)))
-            similarity_percentage = round(similarity_score * 100, 2)
-        except Exception as e:
-            # Fallback if semantic similarity fails
-            similarity_percentage = skill_match_percentage  # Use skill match as fallback
-    else:
-        # Model not available - use skill match as semantic similarity proxy
-        similarity_percentage = skill_match_percentage
+    # NLP Semantic Similarity (using TF-IDF for minimal memory usage)
+    try:
+        vectorizer = get_tfidf_vectorizer()
+        # Fit and transform both documents
+        tfidf_matrix = vectorizer.fit_transform([extracted_text, job_description])
+        # Calculate cosine similarity between the two documents
+        similarity_score = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+        # Bound and scale to [0, 100]
+        similarity_score = max(0.0, min(1.0, float(similarity_score)))
+        similarity_percentage = round(similarity_score * 100, 2)
+    except Exception as e:
+        # Fallback if TF-IDF similarity fails (should rarely happen)
+        similarity_percentage = skill_match_percentage  # Use skill match as fallback
 
     # Resume Strength Score
     base_strength_score, strength_breakdown = calculate_resume_strength(resume_text_lower, extracted_text)

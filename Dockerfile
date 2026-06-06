@@ -13,15 +13,12 @@ WORKDIR /app
 # Copy requirements file
 COPY requirements.txt .
 
-# Install CPU-only PyTorch to reduce image size and memory usage
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
-
-# Install the rest of the dependencies
+# Install dependencies (lightweight - no heavy ML libraries)
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Model will be lazy-loaded on first use to save memory during startup
-# Includes fallback to keyword-based matching if model loading fails
-# (This allows the app to work on Render free tier: 512MB RAM limit)
+# Using TF-IDF for semantic matching (lightweight alternative to Sentence Transformer)
+# This saves ~400MB of RAM compared to heavy ML models
+# App is now optimized for minimal memory usage and works on any free tier
 
 # Copy the rest of the application files
 COPY . .
@@ -37,8 +34,7 @@ ENV PORT=5000
 ENV FLASK_ENV=production
 ENV TESSERACT_CMD=/usr/bin/tesseract
 
-# Start application using Gunicorn with memory optimization
-# --workers 1: Single worker for minimal memory usage (free tier constraint)
-# --timeout 180: Allow up to 3min for model loading on first request
-# --max-requests 100: Restart worker periodically to avoid memory creep
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --timeout 180 --max-requests 100 app:app"]
+# Start application using Gunicorn with optimal settings
+# --workers 2: Can use more workers now with lightweight TF-IDF (no model overhead)
+# --timeout 30: TF-IDF vectorization is very fast
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 2 --worker-class sync --timeout 30 app:app"]

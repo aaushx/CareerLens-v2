@@ -498,10 +498,35 @@ def calculate_resume_strength(text_lower, text_original):
     return score, breakdown
 
 # -------------------------------
+# Background Warm-up for Lazy Imports
+# -------------------------------
+import threading
+
+_warmup_done = False
+_warmup_lock = threading.Lock()
+
+def _warmup_imports():
+    """Pre-load sklearn and reportlab in background so analysis requests don't timeout."""
+    global _warmup_done
+    try:
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.metrics.pairwise import cosine_similarity
+        from reportlab.lib.pagesizes import letter
+        from reportlab.platypus import SimpleDocTemplate
+        print("[WARMUP] Heavy libraries loaded successfully")
+    except Exception as e:
+        print(f"[WARMUP] Error: {e}")
+    _warmup_done = True
+
+# -------------------------------
 # Home Route
 # -------------------------------
 @app.route("/")
 def home():
+    global _warmup_done
+    with _warmup_lock:
+        if not _warmup_done:
+            threading.Thread(target=_warmup_imports, daemon=True).start()
     return render_template("index.html")
 
 # -------------------------------

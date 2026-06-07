@@ -35,6 +35,7 @@ ENV FLASK_ENV=production
 ENV TESSERACT_CMD=/usr/bin/tesseract
 
 # Start application using Gunicorn with optimal settings
-# --workers 2: Can use more workers now with lightweight TF-IDF (no model overhead)
-# --timeout 30: TF-IDF vectorization is very fast
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 2 --worker-class sync --timeout 30 app:app"]
+# --workers 1: Single worker to minimize memory on free tier
+# --timeout 120: Extra time for first-request lazy imports (sklearn, reportlab)
+# --preload: NOT used, so lazy imports stay deferred until first request
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --timeout 120 app:app"]

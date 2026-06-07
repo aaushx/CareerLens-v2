@@ -139,6 +139,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-input');
     const fileNameBadge = document.getElementById('file-name-badge');
     const fileDisplayName = document.getElementById('file-display-name');
+    
+    // AJAX Progress Bar elements
+    const uploadProgressContainer = document.getElementById('upload-progress-container');
+    const uploadProgressBar = document.getElementById('upload-progress-bar');
+    const uploadPercentage = document.getElementById('upload-percentage');
+    const uploadSize = document.getElementById('upload-size');
+    const cancelUploadBtn = document.getElementById('cancel-upload-btn');
+    const changeFileBtn = document.getElementById('change-file-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const tempFilenameInput = document.getElementById('temp-filename');
+
+    let uploadXHR = null;
 
     if (uploadArea && fileInput) {
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -166,11 +178,134 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displaySelectedFile() {
         if (fileInput && fileInput.files.length > 0) {
-            fileDisplayName.textContent = fileInput.files[0].name;
-            fileNameBadge.classList.remove('d-none');
-        } else if (fileNameBadge) {
-            fileNameBadge.classList.add('d-none');
+            const file = fileInput.files[0];
+            
+            // Client-side file size validation (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size exceeds the 5MB limit. Please upload a smaller PDF resume.');
+                resetUploadUI();
+                return;
+            }
+
+            // Client-side extension validation (PDF only)
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                alert('Only PDF files are allowed.');
+                resetUploadUI();
+                return;
+            }
+
+            // Trigger the AJAX file upload
+            uploadFileToServer(file);
+        } else {
+            resetUploadUI();
         }
+    }
+
+    function uploadFileToServer(file) {
+        // Abort any active upload
+        if (uploadXHR) {
+            uploadXHR.abort();
+        }
+
+        // Show progress UI and reset states
+        fileNameBadge.classList.add('d-none');
+        uploadProgressContainer.classList.remove('d-none');
+        uploadProgressBar.style.width = '0%';
+        uploadProgressBar.setAttribute('aria-valuenow', 0);
+        uploadPercentage.textContent = '0%';
+        uploadSize.textContent = `0.00 MB / ${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+
+        // Disable submit button during upload
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Uploading Resume...';
+        }
+
+        const formData = new FormData();
+        formData.append('resume', file);
+
+        uploadXHR = new XMLHttpRequest();
+        uploadXHR.open('POST', '/upload_temp_resume', true);
+
+        // Track progress
+        uploadXHR.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                uploadProgressBar.style.width = `${percent}%`;
+                uploadProgressBar.setAttribute('aria-valuenow', percent);
+                uploadPercentage.textContent = `${percent}%`;
+                uploadSize.textContent = `${(e.loaded / (1024 * 1024)).toFixed(2)} MB / ${(e.total / (1024 * 1024)).toFixed(2)} MB`;
+            }
+        };
+
+        // Finish load
+        uploadXHR.onload = () => {
+            if (uploadXHR.status === 200) {
+                try {
+                    const response = JSON.parse(uploadXHR.responseText);
+                    if (response.success) {
+                        tempFilenameInput.value = response.filename;
+                        fileDisplayName.textContent = `${response.original_filename} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+                        
+                        // Show success state
+                        uploadProgressContainer.classList.add('d-none');
+                        fileNameBadge.classList.remove('d-none');
+
+                        // Enable analysis button
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Analyze Resume Match';
+                        }
+                    } else {
+                        alert(`Upload failed: ${response.error || 'Unknown error'}`);
+                        resetUploadUI();
+                    }
+                } catch (err) {
+                    alert('Invalid server response during upload.');
+                    resetUploadUI();
+                }
+            } else {
+                let errorMsg = 'Upload failed.';
+                try {
+                    const response = JSON.parse(uploadXHR.responseText);
+                    errorMsg = response.error || errorMsg;
+                } catch(e) {}
+                alert(errorMsg);
+                resetUploadUI();
+            }
+            uploadXHR = null;
+        };
+
+        uploadXHR.onerror = () => {
+            alert('An error occurred during file upload.');
+            resetUploadUI();
+            uploadXHR = null;
+        };
+
+        uploadXHR.send(formData);
+    }
+
+    function resetUploadUI() {
+        if (uploadXHR) {
+            uploadXHR.abort();
+            uploadXHR = null;
+        }
+        if (fileInput) fileInput.value = '';
+        if (tempFilenameInput) tempFilenameInput.value = '';
+        if (fileNameBadge) fileNameBadge.classList.add('d-none');
+        if (uploadProgressContainer) uploadProgressContainer.classList.add('d-none');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Analyze Resume Match';
+        }
+    }
+
+    if (cancelUploadBtn) {
+        cancelUploadBtn.addEventListener('click', resetUploadUI);
+    }
+
+    if (changeFileBtn) {
+        changeFileBtn.addEventListener('click', resetUploadUI);
     }
 
     /* =============================================
@@ -182,7 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (form && loadingOverlay) {
         form.addEventListener('submit', (e) => {
-            if (!fileInput.files.length) {
+            const tempVal = tempFilenameInput ? tempFilenameInput.value.trim() : '';
+            if (!tempVal) {
                 alert('Please upload a PDF resume file first.');
                 e.preventDefault();
                 return;
@@ -193,6 +329,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Please enter a target job description of at least 20 characters.');
                 e.preventDefault();
                 return;
+            }
+
+            // Clear file input value before submission to prevent double upload of bytes
+            if (fileInput) {
+                fileInput.value = '';
             }
 
             // Trigger normal upload progress
@@ -293,6 +434,7 @@ function runDemoScan() {
     const form = document.getElementById('analyzer-form');
     const fileInput = document.getElementById('file-input');
     const jdField = document.getElementById('job-description');
+    const tempFilenameInput = document.getElementById('temp-filename');
 
     if (!form) return;
 
@@ -304,6 +446,11 @@ function runDemoScan() {
     // Bypass required file validation dynamically
     if (fileInput) {
         fileInput.removeAttribute('required');
+    }
+
+    // Clear temporary filename input to avoid submitting old data
+    if (tempFilenameInput) {
+        tempFilenameInput.value = '';
     }
 
     // Run loaders, set endpoint to /demo, and submit

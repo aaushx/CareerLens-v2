@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import fitz
 import pytesseract
 from PIL import Image
@@ -52,13 +53,39 @@ def ensure_session_id():
         session["session_id"] = str(uuid.uuid4())
 
 # -------------------------------
-# Upload Folder Setup
+# Upload Folder Setup & Configuration
 # -------------------------------
 UPLOAD_FOLDER = "uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # Max 5MB limit
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+# -------------------------------
+# Request size limit error handler
+# -------------------------------
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return jsonify({"success": False, "error": "File size exceeds the maximum limit of 5MB"}), 413
+
+def cleanup_old_uploads():
+    """Deletes temporary files in the uploads folder that are older than 30 minutes."""
+    try:
+        now = time.time()
+        for filename in os.listdir(UPLOAD_FOLDER):
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            if os.path.isfile(filepath):
+                # Check file age (mtime)
+                file_age = now - os.path.getmtime(filepath)
+                if file_age > 1800:  # 30 minutes
+                    try:
+                        os.remove(filepath)
+                        print(f"Cleaned up old temp file: {filename}")
+                    except Exception as e:
+                        print(f"Error deleting file {filename}: {e}")
+    except Exception as e:
+        print(f"Error during cleanup of old uploads: {e}")
 
 # -------------------------------
 # Skill Database by Category
@@ -977,43 +1004,114 @@ def perform_analysis(extracted_text, job_description, filename, extraction_metho
     return results
 
 # -------------------------------
+# Upload Temporary Resume Route (AJAX Upload)
+# -------------------------------
+@app.route("/upload_temp_resume", methods=["POST"])
+def upload_temp_resume():
+    # Run cleanup of old files to prevent storage bloat
+    cleanup_old_uploads()
+
+    if "resume" not in request.files:
+        return jsonify({"success": False, "error": "No resume file uploaded"}), 400
+
+    file = request.files["resume"]
+
+    if file.filename == "":
+        return jsonify({"success": False, "error": "No selected file"}), 400
+
+    if not file.filename.lower().endswith(".pdf"):
+        return jsonify({"success": False, "error": "Only PDF files are allowed"}), 400
+
+    # Extra safety check for file size (5MB)
+    try:
+        file.seek(0, os.SEEK_END)
+        size = file.tell()
+        file.seek(0)
+        if size > 5 * 1024 * 1024:
+            return jsonify({"success": False, "error": "File size exceeds the 5MB limit"}), 413
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Error validating file size: {str(e)}"}), 500
+
+    try:
+        base_name = secure_filename(file.filename)
+        # Prepend unique prefix
+        unique_prefix = str(uuid.uuid4())[:8]
+        filename = f"{unique_prefix}_{base_name}"
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(filepath)
+        
+        return jsonify({
+            "success": True,
+            "filename": filename,
+            "original_filename": file.filename
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Failed to save temporary file: {str(e)}"}), 500
+
+# -------------------------------
 # Upload Route (Renders result.html)
 # -------------------------------
 @app.route("/upload", methods=["POST"])
 def upload():
     # -------------------------------
-    # Validate Request Files
+    # Validate Request Files / Temp File
     # -------------------------------
-    if "resume" not in request.files:
-        return "No resume file uploaded", 400
+    temp_filename = request.form.get("temp_filename", "").strip()
+    filename = ""
+    filepath = ""
 
-    file = request.files["resume"]
+    if temp_filename:
+        filename = secure_filename(temp_filename)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        if not os.path.exists(filepath):
+            return "Temporary file not found or expired. Please re-upload.", 400
+    else:
+        # Fallback to direct upload
+        if "resume" not in request.files:
+            return "No resume file uploaded", 400
 
-    if file.filename == "":
-        return "No selected file", 400
+        file = request.files["resume"]
 
-    if not file.filename.lower().endswith(".pdf"):
-        return "Only PDF files are allowed", 400
+        if file.filename == "":
+            return "No selected file", 400
+
+        if not file.filename.lower().endswith(".pdf"):
+            return "Only PDF files are allowed", 400
+
+        # Enforce size check for fallback direct upload
+        try:
+            file.seek(0, os.SEEK_END)
+            size = file.tell()
+            file.seek(0)
+            if size > 5 * 1024 * 1024:
+                return "File size exceeds the 5MB limit", 400
+        except Exception as e:
+            return f"Error validating file size: {str(e)}", 500
+
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(filepath)
 
     # -------------------------------
     # Validate Job Description
     # -------------------------------
     if "job_description" not in request.form:
+        if temp_filename and os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+            except:
+                pass
         return "Job description is missing", 400
 
     job_description = request.form["job_description"]
 
     if len(job_description.strip()) < 20:
+        if temp_filename and os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+            except:
+                pass
         return "Job description must be at least 20 characters long", 400
-
-    job_description_lower = job_description.lower()
-
-    # -------------------------------
-    # Save Resume Safely
-    # -------------------------------
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    file.save(filepath)
 
     extracted_text = ""
     extraction_method = "PDF Text Extraction"
@@ -1040,7 +1138,7 @@ def upload():
         return f"Failed to extract text from PDF: {str(e)}", 500
     finally:
         # Secure file deletion
-        if os.path.exists(filepath):
+        if filepath and os.path.exists(filepath):
             try:
                 os.remove(filepath)
             except Exception as e:
@@ -1052,12 +1150,18 @@ def upload():
     if len(extracted_text.strip()) == 0:
         return "Could not extract any text from the uploaded PDF", 400
 
-    results = perform_analysis(extracted_text, job_description, filename, extraction_method)
+    # Clean UUID prefix for DB storage and UI display
+    display_filename = filename
+    if temp_filename and len(filename) > 9 and filename[8] == '_':
+        if re.match(r'^[a-f0-9]{8}$', filename[:8]):
+            display_filename = filename[9:]
+
+    results = perform_analysis(extracted_text, job_description, display_filename, extraction_method)
     session["results"] = results
     
     # Save scan to SQLite database
     try:
-        database.save_scan(session["session_id"], filename, extraction_method, job_description, results)
+        database.save_scan(session["session_id"], display_filename, extraction_method, job_description, results)
     except Exception as e:
         print(f"Error saving scan to database: {e}")
         

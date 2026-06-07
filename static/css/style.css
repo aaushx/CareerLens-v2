@@ -1906,3 +1906,59 @@ textarea.form-control.bg-dark:focus {
         transform: translateX(0) !important;
     }
 }
+
+/* =============================================
+   10. UPLOAD PROGRESS BAR & FLOW STYLE ADJUSTMENTS
+   ============================================= */
+
+/* Pulse animation for uploading icon */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.animate-pulse {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Button disabled state styled to match grey/white minimalist SaaS design */
+.btn-pill-primary:disabled {
+    background-color: var(--text-muted) !important;
+    border-color: var(--text-muted) !important;
+    color: var(--surface-dark) !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Custom styles for AJAX progress bar */
+.upload-progress-container {
+    transition: var(--transition-smooth);
+}
+
+.upload-progress-container .progress {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+    overflow: hidden;
+}
+
+.upload-progress-container .progress-bar {
+    background: linear-gradient(90deg, var(--accent-purple), var(--primary)) !important;
+    border-radius: 3px;
+    height: 100%;
+}
+
+.upload-progress-container .btn-link {
+    transition: var(--transition-base);
+}
+
+.upload-progress-container .btn-link:hover {
+    color: var(--danger) !important;
+    text-decoration: underline !important;
+}
+
+#change-file-btn {
+    transition: var(--transition-base);
+}
+
+#change-file-btn:hover {
+    color: var(--primary) !important;
+}

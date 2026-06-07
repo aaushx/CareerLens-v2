@@ -583,8 +583,8 @@ textarea.form-control.bg-dark:focus {
 }
 .gauge-container-lens {
     position: relative;
-    width: 100px;
-    height: 100px;
+    width: clamp(80px, 9vw, 120px);
+    height: clamp(80px, 9vw, 120px);
     margin: 0 auto 1rem;
 }
 .gauge-svg-lens {
@@ -609,7 +609,7 @@ textarea.form-control.bg-dark:focus {
     transform: translate(-50%, -50%);
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 700;
-    font-size: 1.35rem;
+    font-size: clamp(1rem, 1.25vw, 1.5rem);
     color: var(--text-main);
 }
 .gauge-label-lens {
@@ -1482,12 +1482,22 @@ textarea.form-control.bg-dark:focus {
         padding: 0.7rem 0.85rem;
     }
 
+    /* ─ Toggle Button ─ */
+    .navbar-mobile-toggle {
+        display: flex !important;
+        left: 216px !important; /* 200px sidebar + 16px spacing */
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar-lens.collapsed + .navbar-mobile-toggle {
+        left: 96px !important; /* 80px collapsed sidebar + 16px spacing */
+    }
+
     /* ─ Canvas ─ */
     .canvas-lens {
         margin-left: 200px;
-        padding: 2.5rem;
+        padding: 5rem 2.5rem 2.5rem 2.5rem !important;
     }
-    .sidebar-lens.collapsed + .canvas-lens {
+    .sidebar-lens.collapsed + .navbar-mobile-toggle + .canvas-lens {
         margin-left: 80px !important;
     }
 

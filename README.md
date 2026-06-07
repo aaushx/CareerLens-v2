@@ -7,7 +7,7 @@
 ## Key Features
 
 1. **AI ATS Scoring Engine** — Simulates how enterprise parsing algorithms score candidate resumes.
-2. **Semantic Similarity Parsing** — Uses Sentence Transformers (`all-MiniLM-L6-v2`) to compare the resume's text semantically to target job description requirements.
+2. **Semantic Similarity Parsing** — Uses TF-IDF vectorization with cosine similarity to compare the resume's text semantically to target job description requirements. Lightweight and fast with minimal memory overhead.
 3. **Skill Gap Intelligence** — Cross-references technical terms to locate critical missing qualifications.
 4. **Chronological Roadmaps** — Generates step-by-step learning schedules to bridge identified gaps.
 5. **Database-backed Search Logs** — Secure, session-based scan logs powered by SQLite. Scans are persistent server-side but locked to each visitor's session to preserve absolute privacy.
@@ -19,7 +19,7 @@
 ## Technical Stack
 
 * **Frontend**: HTML5, Vanilla CSS3 (Custom Grey & White Design System), Vanilla JavaScript (IntersectionObserver for scroll reveals, active state micro-interactions), Chart.js (Radar & Donut charts), Bootstrap 5.
-* **Backend**: Python 3.10+, Flask, SQLite (Data persistence), PyMuPDF (PDF extraction), PyTesseract (OCR layers), Sentence Transformers (semantic embeddings), ReportLab (PDF reporting).
+* **Backend**: Python 3.10+, Flask, SQLite (Data persistence), PyMuPDF (PDF extraction), PyTesseract (OCR layers), scikit-learn TF-IDF (semantic similarity), ReportLab (PDF reporting).
 
 ---
 
@@ -79,37 +79,12 @@ The application automatically creates a local SQLite database file named `career
 
 ---
 
-## Production Deployment (Oracle Cloud Always Free - RECOMMENDED)
-
-**Oracle Cloud Always Free tier is the best option for CareerLens** because:
-- ✅ **2GB RAM** (plenty for the Sentence Transformer model)
-- ✅ **Always free** (never expires, no credit card needed after trial)
-- ✅ Full Docker support
-- ✅ 20GB persistent storage
-
-### Quick Start (5 minutes)
-
-1. **Create Oracle Cloud Account**: https://www.oracle.com/cloud/free/
-2. **Launch Always Free VM** with 2GB RAM
-3. **Deploy with Docker**:
-   ```bash
-   git clone https://github.com/aaushx/CareerLens-v1.git
-   cd CareerLens-v1
-   docker-compose up -d
-   ```
-4. **Access at**: `http://your-instance-ip:5000`
-
-👉 **Full detailed guide**: See [ORACLE_CLOUD_SETUP.md](ORACLE_CLOUD_SETUP.md)
-
----
-
 ## Production Deployment (Render + Docker)
 
-Since **Sentence Transformers** and **PyTorch** can have a heavy disk and memory footprint, deploying standard packages directly can exceed free-tier limitations (e.g. Render's 512MB RAM ceiling). 
-
-To deploy successfully on Render:
-1. We use **Docker** (Render's Docker build environment installs native Linux apt packages like `tesseract-ocr` automatically).
-2. We install the **CPU-only PyTorch build** (`--index-url https://download.pytorch.org/whl/cpu`), which reduces the image size from >2GB to under 300MB and fits well within memory limits.
+CareerLens uses lightweight TF-IDF for semantic matching instead of heavy ML models, making it an ideal fit for Render's free tier:
+- ✅ **Minimal RAM usage** (~50MB vs 400MB+ with Sentence Transformers)
+- ✅ **Fast cold starts** (heavy libraries are lazy-loaded on first request, not at boot)
+- ✅ **Docker support** with automatic Tesseract OCR installation
 
 ### One-Click Deployment Setup
 
@@ -152,10 +127,30 @@ Then set it in Render's Environment Variables dashboard.
 
 ---
 
-## Deployment Troubleshooting
+## Keeping Your Free Tier Awake (Render)
 
-### Issue: "ModuleNotFoundError: No module named 'torch'"
-**Solution**: The Dockerfile installs CPU-only PyTorch via a specific index URL. Ensure Docker build is being used, not pip install from environment.
+Render's free tier spins down your container after **15 minutes of inactivity**, causing a 30-50 second cold-start delay for the next visitor. To keep your app warm 24/7:
+
+### Option 1: UptimeRobot (Recommended — Free)
+1. Create a free account at [UptimeRobot.com](https://uptimerobot.com/)
+2. Add a new **HTTP(s) Monitor**:
+   - **URL**: `https://your-app-name.onrender.com/`
+   - **Monitoring Interval**: `5 minutes`
+3. UptimeRobot will ping your app every 5 minutes, keeping the container alive.
+
+### Option 2: Cron-job.org (Free)
+1. Create a free account at [cron-job.org](https://cron-job.org/)
+2. Create a new cron job:
+   - **URL**: `https://your-app-name.onrender.com/`
+   - **Schedule**: Every 12 minutes (`*/12 * * * *`)
+3. The service will send an HTTP GET request on schedule to prevent sleep.
+
+### Option 3: Render Starter Plan ($7/month)
+Upgrade to Render's Starter tier for always-on containers with zero cold starts.
+
+---
+
+## Deployment Troubleshooting
 
 ### Issue: "No such file or directory: 'tesseract.exe'"
 **Solution**: On Render/Linux, Tesseract is installed via apt in the Dockerfile. The code automatically detects it at `/usr/bin/tesseract`.

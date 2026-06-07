@@ -4,19 +4,14 @@ import fitz
 import pytesseract
 from PIL import Image
 from flask import Flask, render_template, request, jsonify, send_file, session
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+# sklearn imports are lazy-loaded inside perform_analysis() for faster container startup
 from werkzeug.utils import secure_filename
 
 # Load environment variables from .env file
 
 
-# ReportLab imports for PDF generation
+# ReportLab imports are lazy-loaded inside generate_pdf_report() for faster container startup
 from io import BytesIO
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
 
 # -------------------------------
 # Tesseract OCR Path (Cross-platform)
@@ -35,9 +30,11 @@ vectorizer = None
 def get_tfidf_vectorizer():
     """Lazy-initialize TF-IDF vectorizer for semantic similarity.
     TF-IDF is lightweight and works well for this use case without heavy ML models.
+    Imports sklearn lazily to speed up container startup.
     """
     global vectorizer
     if vectorizer is None:
+        from sklearn.feature_extraction.text import TfidfVectorizer
         vectorizer = TfidfVectorizer(max_features=5000, stop_words='english', lowercase=True)
     return vectorizer
 
@@ -592,6 +589,7 @@ def perform_analysis(extracted_text, job_description, filename, extraction_metho
 
     # NLP Semantic Similarity (using TF-IDF for minimal memory usage)
     try:
+        from sklearn.metrics.pairwise import cosine_similarity
         vectorizer = get_tfidf_vectorizer()
         # Fit and transform both documents
         tfidf_matrix = vectorizer.fit_transform([extracted_text, job_description])
@@ -1355,6 +1353,12 @@ def generate_suggestions(text_lower, text_original, match_percentage, action_ver
 # ReportLab PDF Helper Function
 # -------------------------------
 def generate_pdf_report(data):
+    # Lazy-load reportlab to speed up container startup
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib import colors
+
     buffer = BytesIO()
     # Margins: 36pt = 0.5 inch
     doc = SimpleDocTemplate(

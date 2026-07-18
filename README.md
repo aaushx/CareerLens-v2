@@ -59,11 +59,11 @@ python -c "from app.database import init_db; init_db()"
 # 4. Start local Flask development server
 # On Windows (PowerShell):
 $env:FLASK_ENV="development"
-python app.py
+python wsgi.py
 
 # On macOS/Linux:
 export FLASK_ENV="development"
-python app.py
+python wsgi.py
 ```
 Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser!
 
@@ -83,7 +83,7 @@ CareerLens/
 ├── static/                    # Frontend style and logic scripts
 ├── templates/                 # HTML templates
 ├── uploads/                   # Temporary upload cache directory
-├── app.py                     # Web app starter script
+├── wsgi.py                    # Web app starter script
 ├── requirements.txt           # Production packages
 └── README.md                  # Project landing page (this document)
 ```

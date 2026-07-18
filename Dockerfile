@@ -35,4 +35,4 @@ ENV FLASK_ENV=production
 ENV TESSERACT_CMD=/usr/bin/tesseract
 
 # Start application using Gunicorn with optimal settings
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --timeout 120 app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 1 --worker-class sync --timeout 120 wsgi:app"]

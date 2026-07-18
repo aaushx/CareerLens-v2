@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: careerlens
-    env: docker
-    plan: free
-    region: oregon
-    branch: main
-    numInstances: 1
-    healthCheckPath: /

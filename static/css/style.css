@@ -1962,3 +1962,180 @@ textarea.form-control.bg-dark:focus {
 #change-file-btn:hover {
     color: var(--primary) !important;
 }
+
+/* ============================================================
+   Sprint 4 Enhancements: UX, Toast, Skeletons, A11y & Polish
+   ============================================================ */
+
+/* ── Focus Outline for Keyboard Navigation (A11y) ── */
+:focus-visible {
+    outline: 2px solid var(--primary) !important;
+    outline-offset: 4px !important;
+    box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.15) !important;
+}
+
+/* ── Drag & Drop Hover States ── */
+.glass-uploader-lens {
+    border: 2px dashed var(--border-dark) !important;
+    transition: var(--transition-smooth) !important;
+}
+.glass-uploader-lens.dragover {
+    border-color: var(--primary) !important;
+    background-color: var(--surface-dark-light) !important;
+    transform: scale(1.02);
+    box-shadow: var(--glow-shadow);
+}
+.glass-uploader-lens.dragover i {
+    transform: translateY(-8px);
+    color: var(--primary) !important;
+}
+
+/* ── Toast Notifications ── */
+.toast-container-lens {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1060;
+    display: flex;
+    flex-column-gap: 8px;
+    flex-direction: column;
+    pointer-events: none;
+    max-width: 360px;
+    width: 100%;
+}
+.toast-lens {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background-color: var(--surface-dark);
+    color: var(--text-main);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    border-left: 4px solid var(--accent-indigo);
+    margin-top: 8px;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    pointer-events: auto;
+    animation: toastFadeIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transition: var(--transition-smooth);
+}
+.toast-lens.hide {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+}
+.toast-lens-success { border-left-color: var(--success); }
+.toast-lens-error   { border-left-color: var(--danger); }
+.toast-lens-warning { border-left-color: var(--warning); }
+.toast-lens-info    { border-left-color: var(--accent-indigo); }
+
+.toast-icon-lens {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.toast-lens-success .toast-icon-lens { color: var(--success); }
+.toast-lens-error .toast-icon-lens   { color: var(--danger); }
+.toast-lens-warning .toast-icon-lens { color: var(--warning); }
+.toast-lens-info .toast-icon-lens    { color: var(--accent-indigo); }
+
+.toast-message-lens {
+    font-size: 0.85rem;
+    font-weight: 550;
+    line-height: 1.4;
+}
+
+@keyframes toastFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ── Skeleton Loaders ── */
+.skeleton-lens {
+    background: linear-gradient(90deg, 
+        rgba(0, 0, 0, 0.04) 25%, 
+        rgba(0, 0, 0, 0.08) 37%, 
+        rgba(0, 0, 0, 0.04) 63%
+    );
+    background-size: 400% 100%;
+    animation: skeleton-pulse-lens 1.4s ease infinite;
+    border-radius: 4px;
+    display: inline-block;
+}
+.skeleton-title-lens {
+    height: 24px;
+    width: 60%;
+    margin-bottom: 12px;
+}
+.skeleton-text-lens {
+    height: 12px;
+    width: 100%;
+    margin-bottom: 8px;
+}
+.skeleton-text-lens.short {
+    width: 40%;
+}
+@keyframes skeleton-pulse-lens {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ── Empty States Card ── */
+.empty-state-lens {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 24px;
+    background-color: var(--surface-dark);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-dark);
+}
+.empty-state-icon-lens {
+    font-size: 2.5rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    transition: var(--transition-smooth);
+}
+.empty-state-lens:hover .empty-state-icon-lens {
+    transform: scale(1.1) rotate(-5deg);
+    color: var(--text-main);
+}
+.empty-state-title-lens {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+.empty-state-desc-lens {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    max-width: 280px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* ── Inline Form Validation Styles ── */
+.form-error-msg {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--danger);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: var(--transition-base);
+}
+.form-error-msg.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+textarea.invalid {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+

@@ -155,18 +155,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (uploadArea && fileInput) {
         uploadArea.addEventListener('click', () => fileInput.click());
 
+        // Keyboard accessibility for drag & drop area
+        uploadArea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInput.click();
+            }
+        });
+
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
+            uploadArea.setAttribute('aria-selected', 'true');
         });
 
         uploadArea.addEventListener('dragleave', () => {
             uploadArea.classList.remove('dragover');
+            uploadArea.removeAttribute('aria-selected');
         });
 
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
+            uploadArea.removeAttribute('aria-selected');
             if (e.dataTransfer.files.length > 0) {
                 fileInput.files = e.dataTransfer.files;
                 displaySelectedFile();
@@ -182,14 +193,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Client-side file size validation (5MB max)
             if (file.size > 5 * 1024 * 1024) {
-                alert('File size exceeds the 5MB limit. Please upload a smaller PDF resume.');
+                showToast('File size exceeds the 5MB limit. Please upload a smaller PDF resume.', 'error');
                 resetUploadUI();
                 return;
             }
 
             // Client-side extension validation (PDF only)
             if (!file.name.toLowerCase().endsWith('.pdf')) {
-                alert('Only PDF files are allowed.');
+                showToast('Only PDF files are allowed.', 'error');
                 resetUploadUI();
                 return;
             }
@@ -218,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Disable submit button during upload
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Uploading Resume...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
         }
 
         const formData = new FormData();
@@ -251,17 +262,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         uploadProgressContainer.classList.add('d-none');
                         fileNameBadge.classList.remove('d-none');
 
+                        showToast('Resume uploaded successfully.', 'success');
+
                         // Enable analysis button
                         if (submitBtn) {
                             submitBtn.disabled = false;
                             submitBtn.textContent = 'Analyze Resume Match';
                         }
                     } else {
-                        alert(`Upload failed: ${response.error || 'Unknown error'}`);
+                        showToast(`Upload failed: ${response.error || 'Unknown error'}`, 'error');
                         resetUploadUI();
                     }
                 } catch (err) {
-                    alert('Invalid server response during upload.');
+                    showToast('Invalid server response during upload.', 'error');
                     resetUploadUI();
                 }
             } else {
@@ -270,14 +283,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     const response = JSON.parse(uploadXHR.responseText);
                     errorMsg = response.error || errorMsg;
                 } catch(e) {}
-                alert(errorMsg);
+                showToast(errorMsg, 'error');
                 resetUploadUI();
             }
             uploadXHR = null;
         };
 
         uploadXHR.onerror = () => {
-            alert('An error occurred during file upload.');
+            showToast('An error occurred during file upload.', 'error');
             resetUploadUI();
             uploadXHR = null;
         };
@@ -315,26 +328,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.getElementById('loading-overlay');
     const cancelAnalysisBtn = document.getElementById('cancel-analysis');
 
+    // Real-time inline validation for job description
+    const jdField = document.getElementById('job-description');
+    const jdErrorMsg = document.getElementById('jd-error-msg');
+    if (jdField && jdErrorMsg) {
+        jdField.addEventListener('input', () => {
+            if (jdField.value.trim().length >= 20) {
+                jdField.classList.remove('invalid');
+                jdErrorMsg.classList.remove('show');
+            } else {
+                if (jdField.value.trim().length > 0) {
+                    jdField.classList.add('invalid');
+                    jdErrorMsg.classList.add('show');
+                }
+            }
+        });
+    }
+
     if (form && loadingOverlay) {
         form.addEventListener('submit', (e) => {
-            const tempVal = tempFilenameInput ? tempFilenameInput.value.trim() : '';
-            if (!tempVal) {
-                alert('Please upload a PDF resume file first.');
+            if (window.isFormSubmitting) {
                 e.preventDefault();
                 return;
             }
 
-            const jdVal = document.getElementById('job-description').value.trim();
-            if (jdVal.length < 20) {
-                alert('Please enter a target job description of at least 20 characters.');
+            const tempVal = tempFilenameInput ? tempFilenameInput.value.trim() : '';
+            if (!tempVal) {
+                showToast('Please upload a PDF resume file first.', 'warning');
                 e.preventDefault();
                 return;
+            }
+
+            const jdVal = jdField ? jdField.value.trim() : '';
+            if (jdVal.length < 20) {
+                showToast('Please enter a target job description of at least 20 characters.', 'warning');
+                if (jdField) {
+                    jdField.classList.add('invalid');
+                }
+                if (jdErrorMsg) {
+                    jdErrorMsg.classList.add('show');
+                }
+                e.preventDefault();
+                return;
+            }
+
+            // Prevent double submission
+            window.isFormSubmitting = true;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Running Analysis...';
             }
 
             // Clear file input value before submission to prevent double upload of bytes
             if (fileInput) {
                 fileInput.value = '';
             }
+
+            showToast('Starting resume analysis...', 'info');
 
             // Trigger normal upload progress
             runProgressAnimation();
@@ -355,6 +405,64 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.CL_INITIAL_DATA && window.CL_INITIAL_DATA.success) {
         // Render the current server-provided payload
         renderDashboardState(window.CL_INITIAL_DATA);
+    } else {
+        // Render beautiful Empty State over Overview, Analysis, Skills, and Analytics tabs!
+        const overviewTab = document.getElementById('overview-tab-view');
+        if (overviewTab) {
+            overviewTab.innerHTML = `
+                <div class="empty-state-lens my-5">
+                    <i class="empty-state-icon-lens fas fa-folder-open"></i>
+                    <h5 class="empty-state-title-lens">Upload your resume to begin analysis.</h5>
+                    <p class="empty-state-desc-lens">No scan data has been loaded for this session. Start by analyzing a resume file.</p>
+                    <a href="/" class="btn btn-pill btn-pill-primary empty-state-btn-lens"><i class="fas fa-arrow-up-from-bracket me-1"></i> Go to Upload</a>
+                </div>
+            `;
+        }
+
+        const analysisTab = document.getElementById('analysis-tab-view');
+        if (analysisTab) {
+            analysisTab.innerHTML = `
+                <div class="empty-state-lens my-5">
+                    <i class="empty-state-icon-lens fas fa-magnifying-glass-chart"></i>
+                    <h5 class="empty-state-title-lens">No analysis reports available.</h5>
+                    <p class="empty-state-desc-lens">Upload a resume and job description to inspect scoring suggestions.</p>
+                    <a href="/" class="btn btn-pill btn-pill-primary empty-state-btn-lens"><i class="fas fa-plus me-1"></i> New Scan</a>
+                </div>
+            `;
+        }
+
+        const skillsTab = document.getElementById('skills-tab-view');
+        if (skillsTab) {
+            skillsTab.innerHTML = `
+                <div class="empty-state-lens my-5">
+                    <i class="empty-state-icon-lens fas fa-brain"></i>
+                    <h5 class="empty-state-title-lens">No skills data available.</h5>
+                    <p class="empty-state-desc-lens">Run an alignment check to plot matching skill distributions.</p>
+                    <a href="/" class="btn btn-pill btn-pill-primary empty-state-btn-lens"><i class="fas fa-plus me-1"></i> New Scan</a>
+                </div>
+            `;
+        }
+
+        const analyticsTab = document.getElementById('analytics-tab-view');
+        if (analyticsTab) {
+            analyticsTab.innerHTML = `
+                <div class="empty-state-lens my-5">
+                    <i class="empty-state-icon-lens fas fa-chart-line"></i>
+                    <h5 class="empty-state-title-lens">No analytics data available.</h5>
+                    <p class="empty-state-desc-lens">Compare resume iterations once you run multiple scans.</p>
+                    <a href="/" class="btn btn-pill btn-pill-primary empty-state-btn-lens"><i class="fas fa-plus me-1"></i> New Scan</a>
+                </div>
+            `;
+        }
+
+        // PDF empty state fallback
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        if (downloadPdfBtn) {
+            downloadPdfBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showToast('No report available.', 'warning');
+            });
+        }
     }
 
     // Render history records log
@@ -860,14 +968,26 @@ function renderHistoryTab() {
     const listWrapper = document.getElementById('history-list-wrapper');
     if (!listWrapper) return;
 
+    // Show skeleton loaders during fetch
+    listWrapper.innerHTML = `
+        <div class="p-4" style="background-color: var(--surface-dark); border-radius: var(--radius-lg); border: 1px solid var(--border-dark);">
+            <div class="skeleton-lens skeleton-title-lens" style="width: 45%;"></div>
+            <div class="skeleton-lens skeleton-text-lens"></div>
+            <div class="skeleton-lens skeleton-text-lens"></div>
+            <div class="skeleton-lens skeleton-text-lens short"></div>
+        </div>
+    `;
+
     fetch('/api/history')
     .then(response => response.json())
     .then(history => {
         if (history.length === 0) {
             listWrapper.innerHTML = `
-                <div class="text-center py-5 text-muted">
-                    <i class="fas fa-history mb-3 fs-1" style="opacity: 0.3;"></i>
-                    <p class="mb-0">No previous scan reports found. Run a new scan first!</p>
+                <div class="empty-state-lens">
+                    <i class="empty-state-icon-lens fas fa-clock-rotate-left" aria-hidden="true"></i>
+                    <h5 class="empty-state-title-lens">No previous resume scans found.</h5>
+                    <p class="empty-state-desc-lens">Analyze your resume against a job description to populate scan records here.</p>
+                    <a href="/" class="btn btn-pill btn-pill-primary empty-state-btn-lens"><i class="fas fa-plus me-1" aria-hidden="true"></i> New Analysis</a>
                 </div>
             `;
             return;
@@ -922,26 +1042,59 @@ function renderHistoryTab() {
  * Reloads a historical scan from the database, updates session results, and redraws gauges/charts.
  */
 function reloadHistoricalScan(scanId) {
+    showToast("Loading historical scan...", "info");
+
+    // Inject skeleton loaders to Overview panels during reload fetch
+    const overviewTitle = document.getElementById('verdict-title-label');
+    const strengthsList = document.getElementById('verdict-strengths-list');
+    const weaknessesList = document.getElementById('verdict-weaknesses-list');
+    const quickWinsList = document.getElementById('quick-wins-list-wrapper');
+
+    if (overviewTitle) {
+        overviewTitle.innerHTML = `<span class="skeleton-lens skeleton-title-lens" style="width: 80%;"></span>`;
+    }
+    if (strengthsList) {
+        strengthsList.innerHTML = `
+            <li><span class="skeleton-lens skeleton-text-lens"></span></li>
+            <li><span class="skeleton-lens skeleton-text-lens short"></span></li>
+        `;
+    }
+    if (weaknessesList) {
+        weaknessesList.innerHTML = `
+            <li><span class="skeleton-lens skeleton-text-lens"></span></li>
+        `;
+    }
+    if (quickWinsList) {
+        quickWinsList.innerHTML = `
+            <div class="p-3">
+                <div class="skeleton-lens skeleton-title-lens" style="width: 50%;"></div>
+                <div class="skeleton-lens skeleton-text-lens"></div>
+            </div>
+        `;
+    }
+
+    // Switch view immediately to Overview
+    const overviewLink = document.querySelector('.sidebar-link-lens[data-tab="overview"]');
+    if (overviewLink) {
+        overviewLink.click();
+    }
+
     fetch(`/api/history/${scanId}`)
     .then(response => response.json())
     .then(data => {
         if (!data.success || !data.results) {
-            alert("Could not load report logs.");
+            showToast("Could not load report logs.", "error");
             return;
         }
 
         // Synchronize all UI metrics, timelines, lists, charts
         renderDashboardState(data.results);
 
-        // Smooth transition to Overview tab
-        const overviewLink = document.querySelector('.sidebar-link-lens[data-tab="overview"]');
-        if (overviewLink) {
-            overviewLink.click();
-        }
+        showToast("Historical scan loaded successfully.", "success");
     })
     .catch(err => {
         console.error("Error loading scan:", err);
-        alert("Failed to connect to the database to reload scan.");
+        showToast("Failed to connect to the database to reload scan.", "error");
     });
 }
 
@@ -956,14 +1109,17 @@ function clearDatabaseHistory() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.reload();
+                showToast("History logs successfully cleared.", "success");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
             } else {
-                alert("Failed to clear database logs.");
+                showToast("Failed to clear database logs.", "error");
             }
         })
         .catch(err => {
             console.error("Error clearing logs:", err);
-            alert("Error connecting to server to clear logs.");
+            showToast("Error connecting to server to clear logs.", "error");
         });
     }
 }
@@ -1015,4 +1171,55 @@ function initScrollReveal() {
     } else {
         revealElements.forEach(el => el.classList.add('revealed'));
     }
+}
+
+/* ── Toast Notification Renderer Utility ── */
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast-lens toast-lens-${type}`;
+    
+    // Accessibility roles & announcements
+    if (type === 'error' || type === 'warning') {
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+    } else {
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+    }
+
+    let icon = 'fa-circle-info';
+    if (type === 'success') icon = 'fa-circle-check';
+    else if (type === 'error') icon = 'fa-circle-xmark';
+    else if (type === 'warning') icon = 'fa-circle-exclamation';
+
+    toast.innerHTML = `
+        <i class="toast-icon-lens fas ${icon}" aria-hidden="true"></i>
+        <div class="toast-message-lens">${escapeHTML(message)}</div>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto-remove toast after 4s
+    setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 4000);
+}
+
+/* ── XSS Protection HTML Escape ── */
+function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
 }

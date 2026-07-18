@@ -1,184 +1,98 @@
 # CareerLens 🚀
 
-**CareerLens** is an ultra-premium, AI-powered ATS (Applicant Tracking System) optimization and resume parsing platform. It lets candidates see their resumes directly through the eyes of recruiters, extracting key metrics, calculating compliance scores, identifying missing skill keywords, generating custom learning roadmaps, and rendering professional PDF feedback reports.
+[![CI/CD Build](https://github.com/your-username/CareerLens/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/CareerLens/actions)
+[![Python Version](https://img.shields.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![Test Coverage](https://img.shields.shields.io/badge/coverage-80%25-green.svg)](docs/walkthrough.md#-verification-results)
+[![License](https://img.shields.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![A11y Compliant](https://img.shields.shields.io/badge/a11y-WCAG%20AA-brightgreen.svg)](docs/walkthrough.md#accessibility-a11y-responsiveness)
+
+**CareerLens** is an ultra-premium, AI-powered Applicant Tracking System (ATS) optimization and resume parsing platform. It lets candidates analyze their resumes directly through the eyes of recruiters, extracting key metrics, calculating compatibility scores, mapping missing skill keywords, generating custom weekly learning roadmaps, and producing professional ReportLab PDF feedback reports.
 
 ---
 
-## Key Features
+## 📖 Complete Documentation Index
 
-1. **AI ATS Scoring Engine** — Simulates how enterprise parsing algorithms score candidate resumes.
-2. **Semantic Similarity Parsing** — Uses TF-IDF vectorization with cosine similarity to compare the resume's text semantically to target job description requirements. Lightweight and fast with minimal memory overhead.
-3. **Skill Gap Intelligence** — Cross-references technical terms to locate critical missing qualifications.
-4. **Chronological Roadmaps** — Generates step-by-step learning schedules to bridge identified gaps.
-5. **Database-backed Search Logs** — Secure, session-based scan logs powered by SQLite. Scans are persistent server-side but locked to each visitor's session to preserve absolute privacy.
-6. **Report PDF Generator** — Exports parsed metrics, checklist items, and recommendations to a downloadable PDF.
-7. **OCR Fallback** — Uses Tesseract OCR to scan image-only or poorly formatted PDF resumes when normal text layers cannot be read.
+For detailed guides, please refer to the following resources in the **[docs/](docs/)** directory:
 
----
-
-## Technical Stack
-
-* **Frontend**: HTML5, Vanilla CSS3 (Custom Grey & White Design System), Vanilla JavaScript (IntersectionObserver for scroll reveals, active state micro-interactions), Chart.js (Radar & Donut charts), Bootstrap 5.
-* **Backend**: Python 3.10+, Flask, SQLite (Data persistence), PyMuPDF (PDF extraction), PyTesseract (OCR layers), scikit-learn TF-IDF (semantic similarity), ReportLab (PDF reporting).
+*   📖 **[Local Installation Guide](docs/INSTALLATION.md)** — Detailed setups for Windows, Linux, and macOS.
+*   🚀 **[Quick Clone Guide](docs/CLONE_GUIDE.md)** — Step-by-step instructions for beginners to clone and run the app.
+*   🗺️ **[System Architecture](docs/ARCHITECTURE.md)** — Detailed pipeline explanations and Mermaid workflow charts.
+*   🔌 **[API Documentation](docs/API.md)** — Comprehensive REST endpoint request payloads and response definitions.
+*   🚢 **[Production Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** — Gunicorn configurations, Docker non-root users, and cloud blueprints.
+*   🤝 **[Contributing Guidelines](docs/CONTRIBUTING.md)** — Branch naming structures, Git Commit rules, and Quality QA gates.
+*   📂 **[Repository Folder Map](docs/PROJECT_STRUCTURE.md)** — Detailed listing of file locations and purposes.
+*   📜 **[Milestone Changelog](docs/CHANGELOG.md)** — Keeping a Changelog log tracking sprint updates from v1.0.0 through v5.0.0.
 
 ---
 
-## Local Setup & Installation
+## 🛠️ Key Features
 
-### 1. Prerequisites
-* **Python 3.10+** installed on your system.
-* **Tesseract OCR** (optional, needed for image-only OCR fallback):
-  * **Windows**: Download the installer from UB-Mannheim and install it to `C:\Program Files\Tesseract-OCR\`.
-  * **Mac**: Install via Homebrew: `brew install tesseract`.
-  * **Linux**: Install via apt: `sudo apt-get install tesseract-ocr`.
+1.  **AI ATS Scoring Engine** — Computes weighted compatibility indexes based on keywords, layout headers, contact presence, active action verbs, and quantified accomplishments.
+2.  **Semantic Match Parsing** — Utilizes scikit-learn TF-IDF vectorization and cosine similarity to compare resume text directly against job descriptions, avoiding heavy model overheads.
+3.  **Skill Gap Intelligence** — Cross-references technical qualifiers to locate missing capabilities.
+4.  **Chronological Learning Roadmaps** — Automatically structures step-by-step weekly learning timelines to bridge identified gaps.
+5.  **Database-backed Scan Logs** — Encapsulates secure, session-isolated SQL logs to reload historical scans.
+6.  **Report PDF Generator** — Compiles metrics and checklists into downloadable, professional feedback reports.
+7.  **OCR Fallback Parser** — Invokes Tesseract OCR to scan image-only or poorly formatted PDF resumes when standard text extraction fails.
+8.  **Accessible UI/UX Design** — High-contrast elements, screen-reader ARIA tags, keyboard focus rings, drag-and-drop file uploaders, and animated skeleton loading states.
 
-### 2. Configure Virtual Environment & Install Dependencies
-Clone the repository, navigate into the directory, and set up the environment:
+---
+
+## 🖥️ Technology Stack
+
+*   **Frontend:** HTML5 (ARIA tagged), CSS3 (Dark/Light visual systems, skeleton animations), JavaScript (IntersectionObserver, Chart.js).
+*   **Backend:** Python 3.12, Flask, SQLite (indexed queries), PyMuPDF (PDF parsing), PyTesseract (OCR engine), scikit-learn TF-IDF (cosine similarity), ReportLab (PDF reporting).
+*   **DevOps:** Docker (runs under non-root system user `careerlens`), Render blueprints, GitHub Actions CI.
+
+---
+
+## 🚀 Quick Start (Local Run)
+
+Navigate to your workspace, create a virtual environment, install dependencies, and run:
 
 ```bash
-# Create virtual environment
+# Clone and enter directory
+git clone https://github.com/your-username/CareerLens.git
+cd CareerLens
+
+# Activate environment and install dependencies
 python -m venv .venv
-
-# Activate virtual environment
-# On Windows:
-.venv\Scripts\activate
-# On Mac/Linux:
-source .venv/bin/activate
-
-# Install dependencies
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-```
+pip install -r requirements-dev.txt
 
-### 3. Run the Server
-Start the local server:
-```bash
+# Create .env config, initialize database, and start development server
+cp .env.example .env
+python -c "from app.database import init_db; init_db()"
+export FLASK_ENV="development" # On Windows: $env:FLASK_ENV="development"
 python app.py
 ```
-Open your browser and navigate to `http://127.0.0.1:5000/`.
+Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
 
 ---
 
-## Database Schema Configuration
-
-The application automatically creates a local SQLite database file named `careerlens.db` upon startup. It contains the `scans` table which tracks scan history:
-
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `INTEGER` | Primary key (auto-incrementing). |
-| `session_id` | `TEXT` | Secure UUID stored in Flask user cookie to isolate history logs. |
-| `timestamp` | `DATETIME` | Time the scan was completed. |
-| `filename` | `TEXT` | Name of the parsed PDF file. |
-| `extraction_method` | `TEXT` | Parsing strategy (`PDF Text Extraction` or `OCR Extraction`). |
-| `job_description` | `TEXT` | Paste text of target requirements. |
-| `final_score` | `REAL` | Overall compatibility index. |
-| `skill_match` | `REAL` | Exact keyword overlap score. |
-| `semantic_match` | `REAL` | Embedding cosine similarity score. |
-| `resume_strength` | `REAL` | Score based on required resume sections. |
-| `badge` | `TEXT` | Strength rating (`Job Ready`, `Advanced`, `Intermediate`, `Beginner`). |
-| `results_json` | `TEXT` | Full JSON results payload (allows instant local scan reloading). |
-
----
-
-## Production Deployment (Render + Docker)
-
-CareerLens uses lightweight TF-IDF for semantic matching instead of heavy ML models, making it an ideal fit for Render's free tier:
-- ✅ **Minimal RAM usage** (~50MB vs 400MB+ with Sentence Transformers)
-- ✅ **Fast cold starts** (heavy libraries are lazy-loaded on first request, not at boot)
-- ✅ **Docker support** with automatic Tesseract OCR installation
-
-### One-Click Deployment Setup
-
-We have included a `render.yaml` blueprint and a custom `Dockerfile` in the root:
-
-1. Push this project repository to **GitHub**.
-2. Go to your **Render Dashboard**, click **Blueprints**, and connect your Github repository.
-3. Render will parse `render.yaml` and configure:
-   * A Python web service built via the `Dockerfile`.
-   * Automatic installation of `tesseract-ocr` for OCR.
-   * Auto-mapping of Port `5000` to Render's public router.
-
-Alternatively, you can create a new **Web Service** manually on Render, choose **Docker** as the environment runtime, and click **Deploy**.
-
-### Environment Variables
-
-Create a `.env` file in the project root (or configure via Render dashboard) with the following variables:
-
-```env
-# Flask Configuration
-FLASK_ENV=production
-SECRET_KEY=your-secure-random-key-here
-
-# Database Path (optional, defaults to careerlens.db)
-# DATABASE_PATH=/data/careerlens.db
-
-# Tesseract OCR Path (Docker sets this automatically)
-# TESSERACT_CMD=/usr/bin/tesseract
-
-# Port (Render sets this automatically)
-PORT=5000
-```
-
-**Important**: Generate a secure `SECRET_KEY` for production:
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-Then set it in Render's Environment Variables dashboard.
-
----
-
-## Keeping Your Free Tier Awake (Render)
-
-Render's free tier spins down your container after **15 minutes of inactivity**, causing a 30-50 second cold-start delay for the next visitor. To keep your app warm 24/7:
-
-### Option 1: UptimeRobot (Recommended — Free)
-1. Create a free account at [UptimeRobot.com](https://uptimerobot.com/)
-2. Add a new **HTTP(s) Monitor**:
-   - **URL**: `https://your-app-name.onrender.com/`
-   - **Monitoring Interval**: `5 minutes`
-3. UptimeRobot will ping your app every 5 minutes, keeping the container alive.
-
-### Option 2: Cron-job.org (Free)
-1. Create a free account at [cron-job.org](https://cron-job.org/)
-2. Create a new cron job:
-   - **URL**: `https://your-app-name.onrender.com/`
-   - **Schedule**: Every 12 minutes (`*/12 * * * *`)
-3. The service will send an HTTP GET request on schedule to prevent sleep.
-
-### Option 3: Render Starter Plan ($7/month)
-Upgrade to Render's Starter tier for always-on containers with zero cold starts.
-
----
-
-## Deployment Troubleshooting
-
-### Issue: "No such file or directory: 'tesseract.exe'"
-**Solution**: On Render/Linux, Tesseract is installed via apt in the Dockerfile. The code automatically detects it at `/usr/bin/tesseract`.
-
-### Issue: Database permission errors on Render
-**Solution**: Use an absolute path for the database in a writable directory, or use the environment variable:
-```env
-DATABASE_PATH=/tmp/careerlens.db
-```
-
----
-
-## File Structure
+## 📂 Repository Layout
 
 ```
 CareerLens/
-├── app.py                # Main Flask application
-├── database.py           # SQLite database management
-├── requirements.txt      # Python dependencies
-├── Dockerfile            # Container configuration
-├── render.yaml           # Render deployment blueprint
-├── .env.example          # Example environment variables
-├── .gitignore            # Git ignore rules
-├── static/
-│   ├── css/style.css     # Frontend styles
-│   └── js/app.js         # Frontend logic
-├── templates/
-│   ├── index.html        # Home page
-│   └── result.html       # Results page
-└── uploads/              # Temporary file uploads
+├── app/                       # Core python source packages
+├── docs/                      # Technical documentation and guides
+├── static/                    # Frontend style and logic scripts
+├── templates/                 # HTML templates
+├── tests/                     # Automated testing suite
+├── scratch/                   # DB performance benchmarking scripts
+├── LICENSE                    # MIT License
+├── README.md                  # Project landing page (this document)
+├── requirements.txt           # Production packages
+└── requirements-dev.txt       # Local developer tools
 ```
+
+---
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👥 Authors
+*   **CareerLens Core Engineering Team** - [GitHub](https://github.com/your-username/CareerLens)

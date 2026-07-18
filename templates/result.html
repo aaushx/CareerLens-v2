@@ -31,30 +31,30 @@
                 </a>
                 <div class="sidebar-subtitle-lens">Executive Suite</div>
 
-                <ul class="sidebar-menu-lens">
-                    <li>
-                        <a href="#" class="sidebar-link-lens active" data-tab="overview">
-                            <i class="fas fa-chart-pie"></i> Overview
+                <ul class="sidebar-menu-lens" role="tablist" aria-label="Dashboard views">
+                    <li role="presentation">
+                        <a href="#" class="sidebar-link-lens active" data-tab="overview" role="tab" aria-selected="true" aria-controls="overview-tab-view" id="tab-overview">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i> Overview
                         </a>
                     </li>
-                    <li>
-                        <a href="#" class="sidebar-link-lens" data-tab="analysis">
-                            <i class="fas fa-chart-line"></i> Analysis
+                    <li role="presentation">
+                        <a href="#" class="sidebar-link-lens" data-tab="analysis" role="tab" aria-selected="false" aria-controls="analysis-tab-view" id="tab-analysis">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i> Analysis
                         </a>
                     </li>
-                    <li>
-                        <a href="#" class="sidebar-link-lens" data-tab="skills">
-                            <i class="fas fa-brain"></i> Skills
+                    <li role="presentation">
+                        <a href="#" class="sidebar-link-lens" data-tab="skills" role="tab" aria-selected="false" aria-controls="skills-tab-view" id="tab-skills">
+                            <i class="fas fa-brain" aria-hidden="true"></i> Skills
                         </a>
                     </li>
-                    <li>
-                        <a href="#" class="sidebar-link-lens" data-tab="analytics">
-                            <i class="fas fa-network-wired"></i> Analytics
+                    <li role="presentation">
+                        <a href="#" class="sidebar-link-lens" data-tab="analytics" role="tab" aria-selected="false" aria-controls="analytics-tab-view" id="tab-analytics">
+                            <i class="fas fa-network-wired" aria-hidden="true"></i> Analytics
                         </a>
                     </li>
-                    <li>
-                        <a href="#" class="sidebar-link-lens" data-tab="history">
-                            <i class="fas fa-history"></i> History
+                    <li role="presentation">
+                        <a href="#" class="sidebar-link-lens" data-tab="history" role="tab" aria-selected="false" aria-controls="history-tab-view" id="tab-history">
+                            <i class="fas fa-history" aria-hidden="true"></i> History
                         </a>
                     </li>
                 </ul>
@@ -410,12 +410,16 @@
         </div>
     </div>
 
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container-lens" aria-live="polite" aria-atomic="true"></div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Injection of Server Results -->
+    <div id="initial-data-holder" data-payload="{{ results_json | tojson | forceescape }}" class="d-none"></div>
     <script>
-        window.CL_INITIAL_DATA = {{ results_json | tojson | safe }};
+        window.CL_INITIAL_DATA = JSON.parse(document.getElementById('initial-data-holder').getAttribute('data-payload'));
     </script>
     
     <script src="/static/js/app.js"></script>

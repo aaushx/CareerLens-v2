@@ -220,21 +220,20 @@
                         
                         <div class="row g-4 mb-4">
                             <!-- Left Column: Drag-and-drop PDF Uploader -->
-                            <div class="col-lg-6">
-                                <div class="glass-uploader-lens" id="upload-area">
-                                    <i class="fas fa-file-pdf"></i>
+                            <div class="col-lg-6">                                <div class="glass-uploader-lens" id="upload-area" role="button" tabindex="0" aria-label="Upload PDF resume, max 5MB" aria-describedby="upload-desc">
+                                    <i class="fas fa-file-pdf" aria-hidden="true"></i>
                                     <h6 class="fw-bold text-white mb-1">Click to browse or drag &amp; drop resume</h6>
-                                    <p class="text-muted small mb-0">PDF files only (max 5MB)</p>
-                                    <input type="file" id="file-input" name="resume" accept=".pdf" class="d-none" required>
+                                    <p class="text-muted small mb-0" id="upload-desc">PDF files only (max 5MB)</p>
+                                    <input type="file" id="file-input" name="resume" accept=".pdf" class="d-none" required aria-required="true" aria-label="Resume file input">
                                 </div>
-                                <div class="file-name-badge d-none mt-3 p-3 rounded-3 bg-white bg-opacity-5 d-flex align-items-center justify-content-between border border-secondary border-opacity-25" id="file-name-badge">
-                                    <span class="small font-bold text-white"><i class="fas fa-circle-check text-success me-2"></i>Uploaded: <span id="file-display-name"></span></span>
-                                    <button type="button" class="btn btn-sm btn-link text-white text-opacity-70 p-0 text-decoration-none font-bold" id="change-file-btn" style="font-size: 0.75rem;">Change File</button>
+                                <div class="file-name-badge d-none mt-3 p-3 rounded-3 bg-white bg-opacity-5 d-flex align-items-center justify-content-between border border-secondary border-opacity-25" id="file-name-badge" role="status">
+                                    <span class="small font-bold text-white"><i class="fas fa-circle-check text-success me-2" aria-hidden="true"></i>Uploaded: <span id="file-display-name"></span></span>
+                                    <button type="button" class="btn btn-sm btn-link text-white text-opacity-70 p-0 text-decoration-none font-bold" id="change-file-btn" style="font-size: 0.75rem;" aria-label="Change uploaded file">Change File</button>
                                 </div>
                                 <!-- Real Upload Progress Bar Container -->
-                                <div class="upload-progress-container d-none mt-3 p-3 rounded-3 bg-white bg-opacity-5 border border-secondary border-opacity-25" id="upload-progress-container">
+                                <div class="upload-progress-container d-none mt-3 p-3 rounded-3 bg-white bg-opacity-5 border border-secondary border-opacity-25" id="upload-progress-container" role="progressbar" aria-valuemin="0" aria-valuemax="100">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="small font-bold text-white"><i class="fas fa-arrow-up-from-bracket me-2 text-primary animate-pulse"></i>Uploading Resume...</span>
+                                        <span class="small font-bold text-white"><i class="fas fa-arrow-up-from-bracket me-2 text-primary animate-pulse" aria-hidden="true"></i>Uploading Resume...</span>
                                         <span class="small font-bold text-secondary" id="upload-percentage">0%</span>
                                     </div>
                                     <div class="progress" style="height: 6px; background-color: rgba(255, 255, 255, 0.1); border-radius: 3px;">
@@ -242,28 +241,31 @@
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mt-2">
                                         <span class="small text-muted" id="upload-size">0.0 MB / 0.0 MB</span>
-                                        <button type="button" class="btn btn-sm btn-link text-danger p-0 font-bold text-decoration-none" id="cancel-upload-btn" style="font-size: 0.75rem;">Cancel</button>
+                                        <button type="button" class="btn btn-sm btn-link text-danger p-0 font-bold text-decoration-none" id="cancel-upload-btn" style="font-size: 0.75rem;" aria-label="Cancel upload">Cancel</button>
                                     </div>
                                 </div>
                             </div>
-
+ 
                             <!-- Right Column: Job Description Requirements -->
                             <div class="col-lg-6">
-                                <label class="form-label fw-bold mb-2">Target Job Description</label>
+                                <label for="job-description" class="form-label fw-bold mb-2">Target Job Description <span class="text-danger" aria-hidden="true">*</span></label>
                                 
                                 <!-- Role samples -->
-                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Sample job descriptions">
                                     <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('swe')">Software Engineer</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('frontend')">Frontend Dev</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('backend')">Backend Dev</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('data')">Data Analyst</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 text-secondary border-secondary border-opacity-25" onclick="useSample('ml')">ML Engineer</button>
                                 </div>
-
-                                <textarea class="form-control bg-dark border border-secondary border-opacity-25 rounded-3 text-main p-3 shadow-none" id="job-description" name="job_description" rows="7" placeholder="Paste the job requirements description here (minimum 20 characters)..." required style="resize: none;"></textarea>
+ 
+                                <textarea class="form-control bg-dark border border-secondary border-opacity-25 rounded-3 text-main p-3 shadow-none" id="job-description" name="job_description" rows="7" placeholder="Paste the job requirements description here (minimum 20 characters)..." required aria-required="true" aria-describedby="jd-error-msg" style="resize: none;"></textarea>
+                                <div class="form-error-msg" id="jd-error-msg" role="alert">
+                                    <i class="fas fa-circle-exclamation" aria-hidden="true"></i> Job description must be at least 20 characters long.
+                                </div>
                             </div>
                         </div>
-
+ 
                         <!-- Submit Button -->
                         <button type="submit" class="btn btn-pill btn-pill-primary w-100 py-3 fw-bold mt-2" id="submit-btn" disabled>
                             Analyze Resume Match
@@ -360,6 +362,9 @@
             </div>
         </div>
     </footer>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container-lens" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

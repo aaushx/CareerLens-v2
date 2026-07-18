@@ -1,34 +1,13 @@
 # CareerLens 🚀
 
-[![CI/CD Build](https://github.com/your-username/CareerLens/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/CareerLens/actions)
-[![Python Version](https://img.shields.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
-[![Test Coverage](https://img.shields.shields.io/badge/coverage-80%25-green.svg)](docs/walkthrough.md#-verification-results)
-[![License](https://img.shields.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![A11y Compliant](https://img.shields.shields.io/badge/a11y-WCAG%20AA-brightgreen.svg)](docs/walkthrough.md#accessibility-a11y-responsiveness)
-
 **CareerLens** is an ultra-premium, AI-powered Applicant Tracking System (ATS) optimization and resume parsing platform. It lets candidates analyze their resumes directly through the eyes of recruiters, extracting key metrics, calculating compatibility scores, mapping missing skill keywords, generating custom weekly learning roadmaps, and producing professional ReportLab PDF feedback reports.
-
----
-
-## 📖 Complete Documentation Index
-
-For detailed guides, please refer to the following resources in the **[docs/](docs/)** directory:
-
-*   📖 **[Local Installation Guide](docs/INSTALLATION.md)** — Detailed setups for Windows, Linux, and macOS.
-*   🚀 **[Quick Clone Guide](docs/CLONE_GUIDE.md)** — Step-by-step instructions for beginners to clone and run the app.
-*   🗺️ **[System Architecture](docs/ARCHITECTURE.md)** — Detailed pipeline explanations and Mermaid workflow charts.
-*   🔌 **[API Documentation](docs/API.md)** — Comprehensive REST endpoint request payloads and response definitions.
-*   🚢 **[Production Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** — Gunicorn configurations, Docker non-root users, and cloud blueprints.
-*   🤝 **[Contributing Guidelines](docs/CONTRIBUTING.md)** — Branch naming structures, Git Commit rules, and Quality QA gates.
-*   📂 **[Repository Folder Map](docs/PROJECT_STRUCTURE.md)** — Detailed listing of file locations and purposes.
-*   📜 **[Milestone Changelog](docs/CHANGELOG.md)** — Keeping a Changelog log tracking sprint updates from v1.0.0 through v5.0.0.
 
 ---
 
 ## 🛠️ Key Features
 
 1.  **AI ATS Scoring Engine** — Computes weighted compatibility indexes based on keywords, layout headers, contact presence, active action verbs, and quantified accomplishments.
-2.  **Semantic Match Parsing** — Utilizes scikit-learn TF-IDF vectorization and cosine similarity to compare resume text directly against job descriptions, avoiding heavy model overheads.
+2.  **Semantic Match Parsing** — Utilizes scikit-learn TF-IDF vocabulary extraction and cosine similarity to compare resume text directly against job descriptions, avoiding heavy model overheads.
 3.  **Skill Gap Intelligence** — Cross-references technical qualifiers to locate missing capabilities.
 4.  **Chronological Learning Roadmaps** — Automatically structures step-by-step weekly learning timelines to bridge identified gaps.
 5.  **Database-backed Scan Logs** — Encapsulates secure, session-isolated SQL logs to reload historical scans.
@@ -42,32 +21,51 @@ For detailed guides, please refer to the following resources in the **[docs/](do
 
 *   **Frontend:** HTML5 (ARIA tagged), CSS3 (Dark/Light visual systems, skeleton animations), JavaScript (IntersectionObserver, Chart.js).
 *   **Backend:** Python 3.12, Flask, SQLite (indexed queries), PyMuPDF (PDF parsing), PyTesseract (OCR engine), scikit-learn TF-IDF (cosine similarity), ReportLab (PDF reporting).
-*   **DevOps:** Docker (runs under non-root system user `careerlens`), Render blueprints, GitHub Actions CI.
 
 ---
 
-## 🚀 Quick Start (Local Run)
+## 🚀 Local Installation & Quick Start
 
-Navigate to your workspace, create a virtual environment, install dependencies, and run:
+Follow these steps to install and run CareerLens locally on your PC:
+
+### 1. Prerequisites
+*   **Python 3.12** installed on your system.
+*   **Tesseract OCR Engine** *(Optional, required only for scanned PDF resumes)*:
+    *   *Windows:* Install to `C:\Program Files\Tesseract-OCR\`.
+    *   *macOS:* Install via Homebrew: `brew install tesseract`.
+    *   *Linux:* Install via apt: `sudo apt-get install tesseract-ocr`.
+
+### 2. Setup Commands
+
+Open your terminal inside the `CareerLens/` folder:
 
 ```bash
-# Clone and enter directory
-git clone https://github.com/your-username/CareerLens.git
-cd CareerLens
-
-# Activate environment and install dependencies
+# 1. Create a virtual environment and activate it
+# On Windows (PowerShell):
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
+.venv\Scripts\activate
 
-# Create .env config, initialize database, and start development server
-cp .env.example .env
+# On macOS/Linux:
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 2. Install package dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# 3. Initialize the SQLite Database
 python -c "from app.database import init_db; init_db()"
-export FLASK_ENV="development" # On Windows: $env:FLASK_ENV="development"
+
+# 4. Start local Flask development server
+# On Windows (PowerShell):
+$env:FLASK_ENV="development"
+python app.py
+
+# On macOS/Linux:
+export FLASK_ENV="development"
 python app.py
 ```
-Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
+Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser!
 
 ---
 
@@ -76,21 +74,24 @@ Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
 ```
 CareerLens/
 ├── app/                       # Core python source packages
-├── docs/                      # Technical documentation and guides
+│   ├── __init__.py            # Application Factory configuration
+│   ├── config.py              # Upload limits and binary configurations
+│   ├── database.py            # SQLite schema and query index
+│   ├── routes.py              # Route endpoints blueprints
+│   ├── data/                  # Static domain dictionaries
+│   └── services/              # PDF, NLP, OCR parsing modules
 ├── static/                    # Frontend style and logic scripts
 ├── templates/                 # HTML templates
-├── tests/                     # Automated testing suite
-├── scratch/                   # DB performance benchmarking scripts
-├── LICENSE                    # MIT License
-├── README.md                  # Project landing page (this document)
+├── uploads/                   # Temporary upload cache directory
+├── app.py                     # Web app starter script
 ├── requirements.txt           # Production packages
-└── requirements-dev.txt       # Local developer tools
+└── README.md                  # Project landing page (this document)
 ```
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ---
 

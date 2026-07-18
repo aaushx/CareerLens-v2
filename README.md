@@ -37,10 +37,14 @@ Follow these steps to install and run CareerLens locally on your PC:
 
 ### 2. Setup Commands
 
-Open your terminal inside the `CareerLens/` folder:
+Open your terminal or command prompt:
 
 ```bash
-# 1. Create a virtual environment and activate it
+# 1. Clone the repository and enter the folder
+git clone https://github.com/aaushx/CareerLens-v2.git
+cd CareerLens-v2
+
+# 2. Create a virtual environment and activate it
 # On Windows (PowerShell):
 python -m venv .venv
 .venv\Scripts\activate
